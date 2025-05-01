@@ -9,7 +9,8 @@
 /* Place font files (e.g., .woff2) in the public/fonts/ directory */
 @font-face {
   font-family: 'KFGQPC Hafs Uthmanic Script';
-  src: url('/fonts/kfgqpc_hafs_uthmanic_script.woff2') format('woff2'); /* Corrected path */
+  /* Corrected the filename based on previous errors */
+  src: url('/fonts/kfgqpc_hafs_uthmanic_script.woff2') format('woff2');
   font-weight: normal;
   font-style: normal;
   font-display: swap;

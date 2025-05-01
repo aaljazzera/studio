@@ -188,7 +188,6 @@ export function AppHeader() {
             console.log("Canplay: Playback started successfully.");
              // Ensure state consistency
              setIsPlaying(true);
-             // setIsAudioLoading(false); // Already set above
         }).catch(err => {
           console.error("Play failed during canplay handler:", err);
            // The audio element's 'error' event should be triggered by the failed play promise
@@ -468,17 +467,18 @@ export function AppHeader() {
             }
             // Reset state related to the OLD source BEFORE setting new src
             setIsPlaying(false); // Visually stop playback
-            // Reset loading state ONLY if forced load. Otherwise, let loadstart handle it based on playIntent.
-            if (forceLoad) {
-              setIsAudioLoading(true); // Assume loading will start
+            // Set loading true if forcing load or if play is intended
+            if (forceLoad || playIntent) {
+              console.log(`prepareAudioSource: Setting loading true (forceLoad: ${forceLoad}, playIntent: ${playIntent})`);
+              setIsAudioLoading(true);
             } else {
+              console.log(`prepareAudioSource: Setting loading false (forceLoad: ${forceLoad}, playIntent: ${playIntent})`);
               setIsAudioLoading(false); // Let loadstart trigger if needed
             }
-            // Do NOT reset playIntent here, it might be needed if a play follows immediately
 
             // --- Set src and call load() ---
             currentAudioRef.src = audioUrl;
-            console.log("Calling audio.load() to fetch new source...");
+            console.log("Calling audio.load()...");
             // Explicitly call load() after setting src to initiate loading
             currentAudioRef.load(); // This triggers 'loadstart' -> 'canplay' or 'error'
             console.log("Audio load initiated.");
@@ -594,9 +594,10 @@ const handlePlayPause = () => {
        // Determine if source needs loading/reloading
       const targetAudioUrl = getAudioUrl(selectedMoshaf.server, selectedAudioSurah);
       const sourceIsCorrect = currentSrc && currentSrc !== window.location.href && currentSrc === targetAudioUrl;
-      const needsSourcePrep = !sourceIsCorrect;
+       // Force load if source is not correct OR if readyState is 0 (HAVE_NOTHING), indicating a potential issue needs reloading
+      const needsSourcePrep = !sourceIsCorrect || readyState === 0;
 
-      console.log(`Play action: Source is correct: ${sourceIsCorrect}, Needs prep: ${needsSourcePrep}, Target URL: ${targetAudioUrl}`);
+      console.log(`Play action: Source is correct: ${sourceIsCorrect}, Needs prep: ${needsSourcePrep}, Target URL: ${targetAudioUrl}, ReadyState: ${readyState}`);
 
       // Ensure source is prepared (loads if necessary)
       const sourceReadyOrPreparing = prepareAudioSource(needsSourcePrep); // Force load if needed
@@ -612,8 +613,8 @@ const handlePlayPause = () => {
 
         // Set loading state if not already loading AND not playable yet
         if (!isAudioLoading && readyState < 3) { // HAVE_FUTURE_DATA or more needed
-            console.log(`Ready state is ${readyState}, waiting for 'canplay' to trigger play. Setting loading state.`);
-            setIsAudioLoading(true);
+            console.log(`Ready state is ${readyState}, waiting for 'loadstart'/'canplay' to trigger play. Setting loading state.`);
+            setIsAudioLoading(true); // Show loader while waiting for data
         } else if (readyState >= 3 && currentAudioRef.paused) {
             // If already playable and paused, try playing immediately. 'canplay' might still fire again.
              console.log(`Ready state is ${readyState}, attempting immediate play...`);
@@ -624,6 +625,10 @@ const handlePlayPause = () => {
              });
         } else {
             console.log(`Ready state is ${readyState}. Play intent set. Waiting for 'canplay' or relying on existing playback state.`);
+             // Ensure loading state is shown if play is intended but not yet playing/ready
+             if (playIntent && !isPlaying && !isAudioLoading && readyState < 3) {
+                 setIsAudioLoading(true);
+             }
         }
       } else {
         console.error("Play clicked, but source preparation failed.");
@@ -659,7 +664,12 @@ const handlePlayPause = () => {
       <div className="flex items-center gap-2">
         {isMobile && <SidebarTrigger icon={Menu} />}
 
-        <div className="flex items-center gap-2 ml-auto md:ml-0">
+        {/* Removed the "قارئ الكتاب" text */}
+      </div>
+
+      <div className="flex items-center gap-4">
+        {/* Reciter and Surah Selectors */}
+        <div className="flex items-center gap-2">
           {isLoadingReciters ? (
             <Skeleton className="h-10 w-[180px]" />
           ) : recitersError ? (
@@ -690,7 +700,6 @@ const handlePlayPause = () => {
             setSelectedAudioSurah(value);
             // Reset state when surah changes manually
             setIsPlaying(false); // Stop visually
-            //setIsAudioLoading(false); // Reset loading - prepareAudioSource will set if needed
             setPlayIntent(false); // Cancel any pending intent
             setIsAutoplaying(false); // Stop autoplay if user changes surah
              if (audioRef.current && !audioRef.current.paused) {
@@ -710,14 +719,11 @@ const handlePlayPause = () => {
             </SelectContent>
           </Select>
         </div>
-      </div>
 
-      <div className="flex items-center gap-2">
+        {/* Play/Pause Button */}
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-               {/* Show loader if explicitly loading OR if play intended and not yet playing */}
-               {/* Simpler logic: Show loader ONLY when isAudioLoading is true */}
               <Button variant="ghost" size="icon" onClick={handlePlayPause} disabled={isPlayDisabled} className="font-cairo">
                  {isAudioLoading ? <Loader2 className="animate-spin h-5 w-5" /> : isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
                 <span className="sr-only">{isPlaying ? 'إيقاف مؤقت' : 'تشغيل'}</span>
@@ -729,6 +735,7 @@ const handlePlayPause = () => {
           </Tooltip>
         </TooltipProvider>
 
+        {/* Volume Control */}
         <div className="flex items-center gap-2 w-32">
           <Slider
             dir="ltr" // Keep LTR for standard slider behavior
@@ -754,6 +761,7 @@ const handlePlayPause = () => {
           </TooltipProvider>
         </div>
 
+        {/* Sources and References Dialog */}
         <Dialog>
           <DialogTrigger asChild>
             <Button variant="ghost" size="icon" className="font-cairo">
@@ -807,4 +815,3 @@ const handlePlayPause = () => {
     </header>
   );
 }
-
