@@ -317,14 +317,14 @@ export function AppHeader() {
   // Returns true if source was set/updated, false otherwise.
    const prepareAudioSource = React.useCallback((forceLoad: boolean = false): boolean => {
        console.log("Attempting to prepare audio source...");
-       console.log("Current selections:", { reciterId: selectedReciterId, moshaf: selectedMoshaf?.id, surah: selectedAudioSurah, currentSrc: audioRef.current?.src });
+       console.log("Current state:", { reciterId: selectedReciterId, moshaf: selectedMoshaf?.id, surah: selectedAudioSurah, currentSrc: audioRef.current?.src });
 
        if (!audioRef.current) {
            console.error("prepareAudioSource: audioRef is null.");
            return false;
        }
        if (!selectedReciterId || !selectedMoshaf || !selectedAudioSurah) {
-           console.warn("prepareAudioSource: Cannot prepare audio source: Missing selections (Reciter, Moshaf, or Surah), Moshaf, or audioRef not ready.");
+           console.warn("prepareAudioSource: Cannot prepare audio source: Missing selections (Reciter, Moshaf, or Surah).");
            // Clear existing source if selections become invalid
             if (audioRef.current.src && audioRef.current.src !== window.location.href) { // Avoid clearing if src is just the page URL
                 console.log("Clearing invalid audio source due to missing selections.");
@@ -337,6 +337,7 @@ export function AppHeader() {
            return false;
        }
 
+       console.log("Selected Moshaf found:", selectedMoshaf);
         // Validate Moshaf server URL before proceeding
         if (!selectedMoshaf.server || typeof selectedMoshaf.server !== 'string' || !(selectedMoshaf.server.startsWith('http://') || selectedMoshaf.server.startsWith('https://'))) {
             console.error(`prepareAudioSource: Invalid server URL in selected Moshaf: ${selectedMoshaf.server}`);
@@ -469,7 +470,7 @@ export function AppHeader() {
         return;
     }
 
-    console.log(`Play/Pause clicked. Current state: isPlaying=${isPlaying}, isAudioLoading=${isAudioLoading}, src=${audioRef.current.src}`);
+    console.log(`Play/Pause clicked. Current state: isPlaying=${isPlaying}, isAudioLoading=${isAudioLoading}`);
 
     if (isPlaying) {
       console.log("Pausing audio...");
@@ -494,7 +495,7 @@ export function AppHeader() {
       console.log(`Source preparation result: ${sourceReady}`);
 
       if (sourceReady && audioRef.current.src && audioRef.current.src !== window.location.href) {
-        console.log("Source ready. Attempting play...");
+        console.log("Source ready or preparing. Attempting play...");
          setIsAudioLoading(true); // Set loading visually, 'playing' or 'error' event will clear it
         try {
            console.log("Audio is paused, calling play()...");
@@ -730,5 +731,3 @@ export function AppHeader() {
     </header>
   );
 }
-
-    
