@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -11,7 +12,7 @@ import {
   Columns,
   Rows,
   PanelLeft,
-  PanelRight // Use PanelRight for RTL toggle
+  PanelRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -30,7 +31,7 @@ import {
     SidebarGroupLabel,
     SidebarGroupContent,
     SidebarSeparator,
-    SidebarTrigger, // Keep SidebarTrigger logic
+    SidebarTrigger,
     useSidebar,
 } from '@/components/ui/sidebar';
 import { useQuranStore } from '@/store/quran-store';
@@ -38,7 +39,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { quranSurahs } from '@/data/quran-surahs'; // Import surah data
 
-// Mock data - replace with actual data fetching/state management
+// Mock data - replace with actual data fetching/state management for novels if needed
 const novels = [
   { id: 'novel1', name: 'رواية مثال 1' },
   { id: 'novel2', name: 'رواية مثال 2' },
@@ -56,8 +57,8 @@ export function AppSidebar() {
     decreaseFontSize,
     viewMode,
     toggleViewMode,
-    setSelectedSurah,
-    selectedSurah,
+    setSelectedSurah, // For displaying Quran text
+    selectedSurah,   // For displaying Quran text
   } = useQuranStore();
 
   const [selectedNovel, setSelectedNovel] = useState<string | undefined>(undefined);
@@ -80,19 +81,20 @@ export function AppSidebar() {
   return (
     <>
         <SidebarHeader className="flex items-center justify-between">
-            {/* SidebarTrigger goes to the left in RTL */}
-            {!isMobile && <SidebarTrigger icon={PanelRight} />}
+             {!isMobile && <SidebarTrigger icon={PanelRight} />}
              <div className="flex items-center gap-2">
+                {/* Use appropriate icon if needed */}
                 <span className="font-semibold text-lg">الكتاب</span>
             </div>
         </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>عناصر التحكم بالقراءة</SidebarGroupLabel>
+          <SidebarGroupLabel>التحكم بالنص</SidebarGroupLabel>
           <SidebarGroupContent className="space-y-4">
+             {/* Novel Selection - Keep if novels feature is separate */}
             <div>
                 <Label htmlFor="novel-select" className="text-sm font-medium mb-1 block">الروايات</Label>
-                <Select value={selectedNovel} onValueChange={setSelectedNovel} disabled={novels.length === 0}>
+                <Select value={selectedNovel} onValueChange={setSelectedNovel} disabled={novels.length === 0} dir="rtl">
                 <SelectTrigger id="novel-select">
                     <SelectValue placeholder="اختر رواية" />
                 </SelectTrigger>
@@ -107,28 +109,30 @@ export function AppSidebar() {
                 </Select>
             </div>
 
+             {/* Quran Surah Selection for Text Display */}
              <div>
-                <Label htmlFor="surah-select" className="text-sm font-medium mb-1 block">سور القرآن</Label>
-                <Select value={selectedSurah} onValueChange={setSelectedSurah}>
-                <SelectTrigger id="surah-select">
-                    <SelectValue placeholder="اختر سورة" />
+                <Label htmlFor="surah-select-text" className="text-sm font-medium mb-1 block">عرض سورة (النص)</Label>
+                <Select value={selectedSurah} onValueChange={setSelectedSurah} dir="rtl">
+                <SelectTrigger id="surah-select-text">
+                    <SelectValue placeholder="اختر سورة لعرضها" />
                 </SelectTrigger>
                 <SelectContent>
                     {quranSurahs.map((surah) => (
                     <SelectItem key={surah.id} value={surah.id.toString()}>
-                        {surah.name}
+                        {surah.id}. {surah.name}
                     </SelectItem>
                     ))}
                 </SelectContent>
                 </Select>
             </div>
 
+             {/* Font Size Control */}
              <div className="flex items-center justify-between">
                <div className="flex items-center gap-1">
                  <Button variant="ghost" size="icon" onClick={increaseFontSize} aria-label="تكبير حجم النص">
                    <ZoomIn />
                  </Button>
-                 <span className="text-sm w-6 text-center">{fontSize}</span>
+                 <span className="text-sm w-6 text-center tabular-nums">{fontSize}</span>
                  <Button variant="ghost" size="icon" onClick={decreaseFontSize} aria-label="تصغير حجم النص">
                    <ZoomOut />
                  </Button>
@@ -136,6 +140,7 @@ export function AppSidebar() {
                 <Label className="text-sm font-medium">حجم النص</Label>
              </div>
 
+             {/* View Mode Toggle */}
              <div className="flex items-center justify-between">
                 <Switch
                     id="view-mode-toggle"
@@ -144,7 +149,7 @@ export function AppSidebar() {
                     aria-label={`التبديل إلى عرض ${viewMode === 'page' ? 'آية بآية' : 'صفحة'}`}
                 />
                <Label htmlFor="view-mode-toggle" className="text-sm font-medium">
-                 وضع العرض: {viewMode === 'page' ? 'صفحة' : 'آية بآية'}
+                 وضع العرض: {viewMode === 'page' ? 'صفحة' : 'صفحة'} {/* Adjusted label for clarity */}
                </Label>
              </div>
 
@@ -154,6 +159,7 @@ export function AppSidebar() {
         <SidebarGroup>
             <SidebarGroupLabel>المظهر</SidebarGroupLabel>
              <SidebarGroupContent className="space-y-4">
+                {/* Theme Toggle */}
                  <div className="flex items-center justify-between">
                       <Switch
                         id="theme-toggle"
