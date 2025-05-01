@@ -207,8 +207,8 @@ const Sidebar = React.forwardRef<
             side={side}
           >
              {/* Add Header and Title for Accessibility */}
-            <SheetHeader className="sr-only">
-                <SheetTitle>Main Navigation</SheetTitle>
+            <SheetHeader>
+                <SheetTitle className="sr-only">Main Navigation</SheetTitle>
             </SheetHeader>
             <div className="flex h-full w-full flex-col">{children}</div>
           </SheetContent>
