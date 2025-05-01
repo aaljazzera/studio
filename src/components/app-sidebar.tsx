@@ -36,6 +36,7 @@ import {
 import { useQuranStore } from '@/store/quran-store';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { quranSurahs } from '@/data/quran-surahs'; // Import surah data
 
 // Mock data - replace with actual data fetching/state management
 const novels = [
@@ -43,11 +44,6 @@ const novels = [
   { id: 'novel2', name: 'رواية مثال 2' },
 ];
 
-// Needs proper Arabic Surah names
-const surahs = Array.from({ length: 114 }, (_, i) => ({
-  id: `${i + 1}`,
-  name: `سورة ${i + 1}`,
-}));
 
 export function AppSidebar() {
   const { theme, setTheme } = useTheme();
@@ -118,8 +114,8 @@ export function AppSidebar() {
                     <SelectValue placeholder="اختر سورة" />
                 </SelectTrigger>
                 <SelectContent>
-                    {surahs.map((surah) => (
-                    <SelectItem key={surah.id} value={surah.id}>
+                    {quranSurahs.map((surah) => (
+                    <SelectItem key={surah.id} value={surah.id.toString()}>
                         {surah.name}
                     </SelectItem>
                     ))}

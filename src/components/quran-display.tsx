@@ -14,12 +14,12 @@ async function fetchQuranText(): Promise<string> {
   try {
     const response = await fetch('/quran.txt');
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(`خطأ HTTP! الحالة: ${response.status}`);
     }
     const text = await response.text();
     // Basic check if the file content looks like the placeholder
     if (text.includes('(This is Surah Al-Fatiha. Please replace this file with the full Quran text in the specified format.)')) {
-        console.warn("Using placeholder Quran text. Please replace public/quran.txt with the full text.");
+        console.warn("استخدام نص القرآن المؤقت. يرجى استبدال public/quran.txt بالنص الكامل.");
          return `
 بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ (1)
 ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَٰلَمِينَ (2) ٱلرَّحْمَٰنِ ٱلرَّحِيمِ (3) مَٰلِكِ يَوْمِ ٱلدِّينِ (4) إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ (5) ٱهْدِنَا ٱلصِّرَٰطَ ٱلْمُسْتَقِيمَ (6) صِرَٰطَ ٱلَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ ٱلْمَغْضُوبِ عَلَيْهِمْ وَلَا ٱلضَّآلِّينَ (7)
@@ -31,7 +31,7 @@ async function fetchQuranText(): Promise<string> {
     }
     return text.trim();
   } catch (error) {
-    console.error("Failed to fetch Quran text:", error);
+    console.error("فشل تحميل النص القرآني:", error);
     // Return placeholder text on error to avoid breaking the UI completely
      return `
 بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ (1)
@@ -70,7 +70,7 @@ export function QuranDisplay() {
   useEffect(() => {
     if (!quranText) return;
 
-    console.log(`QuranDisplay: Surah selected: ${selectedSurah}, ViewMode: ${viewMode}`);
+    console.log(`QuranDisplay: تم اختيار السورة: ${selectedSurah}, وضع العرض: ${viewMode}`);
     // Placeholder for filtering logic:
     // If selectedSurah is defined, filter quranText to show only that surah.
     // If viewMode is 'verse', format the text accordingly.
@@ -135,4 +135,3 @@ export function QuranDisplay() {
     </Card>
   );
 }
-```

@@ -34,4 +34,3 @@ export const useQuranStore = create<QuranState>((set) => ({
   selectedSurah: undefined, // Initially no surah selected
   setSelectedSurah: (surahId) => set({ selectedSurah: surahId }),
 }));
-```

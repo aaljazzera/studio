@@ -36,6 +36,7 @@ import {
 } from '@/components/ui/dialog';
 import { Slider } from '@/components/ui/slider';
 import { useSidebar, SidebarTrigger } from '@/components/ui/sidebar';
+import { quranSurahs } from '@/data/quran-surahs'; // Import surah data
 
 // Mock data - replace with actual data fetching
 const reciters = [
@@ -44,11 +45,6 @@ const reciters = [
   { id: '3', name: 'سعد الغامدي' },
 ];
 
-// Needs proper Arabic Surah names
-const audioSurahs = Array.from({ length: 114 }, (_, i) => ({
-  id: `${i + 1}`,
-  name: `سورة ${i + 1}`,
-}));
 
 export function AppHeader() {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -99,7 +95,7 @@ export function AppHeader() {
        // audioRef.current.src = `https://example.com/audio/${selectedReciter}/${selectedAudioSurah}.mp3`;
        audioRef.current.src = ''; // Clear src to avoid unintended playback until play is clicked
      }
-   }, [selectedReciter, selectedAudioSurah]);
+   }, [selectedReciter, selectedAudioSurah, isPlaying]); // Add isPlaying dependency
 
 
   const handlePlayPause = () => {
@@ -221,8 +217,8 @@ export function AppHeader() {
                 <SelectValue placeholder="اختر سورة صوتية" />
                 </SelectTrigger>
                 <SelectContent>
-                {audioSurahs.map((surah) => (
-                    <SelectItem key={surah.id} value={surah.id}>
+                {quranSurahs.map((surah) => (
+                    <SelectItem key={surah.id} value={surah.id.toString()}>
                     {surah.name}
                     </SelectItem>
                 ))}

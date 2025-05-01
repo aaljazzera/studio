@@ -34,6 +34,7 @@ type SidebarContext = {
   setOpenMobile: (open: boolean) => void
   isMobile: boolean
   toggleSidebar: () => void
+  side: "left" | "right" // Added side property
 }
 
 const SidebarContext = React.createContext<SidebarContext | null>(null)
@@ -53,6 +54,7 @@ const SidebarProvider = React.forwardRef<
     defaultOpen?: boolean
     open?: boolean
     onOpenChange?: (open: boolean) => void
+    side?: "left" | "right" // Allow setting side in provider
   }
 >(
   (
@@ -60,6 +62,7 @@ const SidebarProvider = React.forwardRef<
       defaultOpen = true,
       open: openProp,
       onOpenChange: setOpenProp,
+      side = "right", // Default to right for Arabic UI
       className,
       style,
       children,
@@ -125,8 +128,9 @@ const SidebarProvider = React.forwardRef<
         openMobile,
         setOpenMobile,
         toggleSidebar,
+        side, // Pass side through context
       }),
-      [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
+      [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar, side]
     )
 
     return (
@@ -167,7 +171,7 @@ const Sidebar = React.forwardRef<
 >(
   (
     {
-      side = "left", // Default side remains left, can be overridden
+      side: sideProp, // Rename prop to avoid conflict
       variant = "sidebar",
       collapsible = "offcanvas",
       className,
@@ -176,7 +180,8 @@ const Sidebar = React.forwardRef<
     },
     ref
   ) => {
-    const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
+    const { isMobile, state, openMobile, setOpenMobile, side: contextSide } = useSidebar()
+    const side = sideProp ?? contextSide; // Use prop or context side
 
     if (collapsible === "none") {
       return (
@@ -209,9 +214,9 @@ const Sidebar = React.forwardRef<
             side={side}
           >
              {/* Add Header and Title for Accessibility */}
-            <SheetHeader>
+            <SheetHeader className="hidden"> {/* Hide header visually but keep for screen readers */}
                 {/* Changed title to Arabic */}
-                <SheetTitle className="sr-only">التنقل الرئيسي</SheetTitle>
+                <SheetTitle>التنقل الرئيسي</SheetTitle>
             </SheetHeader>
             <div className="flex h-full w-full flex-col">{children}</div>
           </SheetContent>
@@ -282,8 +287,9 @@ Sidebar.displayName = "Sidebar"
 const SidebarTrigger = React.forwardRef<
   React.ElementRef<typeof Button>,
   React.ComponentProps<typeof Button> & { icon?: React.ElementType } // Allow passing custom icon
->(({ className, onClick, icon: Icon = PanelRight, ...props }, ref) => { // Default to PanelRight for RTL
-  const { toggleSidebar } = useSidebar()
+>(({ className, onClick, icon: IconProp, ...props }, ref) => { // Default to PanelRight for RTL
+  const { toggleSidebar, side } = useSidebar()
+  const Icon = IconProp ?? (side === 'right' ? PanelRight : PanelLeft); // Choose icon based on side
 
   return (
     <Button
@@ -584,8 +590,7 @@ const SidebarMenuButton = React.forwardRef<
     ref
   ) => {
     const Comp = asChild ? Slot : "button"
-    const { isMobile, state } = useSidebar()
-     const { side } = React.useContext(SidebarContext)! ?? { side: 'left' }; // Get side from context
+    const { isMobile, state, side } = useSidebar() // Get side from context
 
     const buttonContent = (
         <>
@@ -810,4 +815,3 @@ export {
   SidebarTrigger,
   useSidebar,
 }
-```
