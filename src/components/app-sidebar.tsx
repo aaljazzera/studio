@@ -85,10 +85,7 @@ export function AppSidebar() {
     <>
         <SidebarHeader className="flex items-center justify-between">
              {!isMobile && <SidebarTrigger icon={PanelRight} />}
-             <div className="flex items-center gap-2">
-                {/* Use appropriate icon if needed */}
-                <span className="font-semibold text-lg font-cairo">الكتاب</span>
-            </div>
+             {/* Removed "قارئ الكتاب" text */}
         </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
@@ -145,11 +142,13 @@ export function AppSidebar() {
              {/* Font Size Control */}
              <div className="flex items-center justify-between">
                <div className="flex items-center gap-1">
-                 <Button variant="ghost" size="icon" onClick={increaseFontSize} aria-label="تكبير حجم النص">
+                 {/* Changed variant to "secondary" */}
+                 <Button variant="secondary" size="icon" onClick={increaseFontSize} aria-label="تكبير حجم النص">
                    <ZoomIn />
                  </Button>
                  <span className="text-sm w-6 text-center tabular-nums">{fontSize}</span>
-                 <Button variant="ghost" size="icon" onClick={decreaseFontSize} aria-label="تصغير حجم النص">
+                 {/* Changed variant to "secondary" */}
+                 <Button variant="secondary" size="icon" onClick={decreaseFontSize} aria-label="تصغير حجم النص">
                    <ZoomOut />
                  </Button>
                </div>
