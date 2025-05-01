@@ -6,10 +6,10 @@
 /* Cairo is imported via next/font in layout.tsx */
 
 /* KFGQPC Quran Font Imports */
-/* Place font files (e.g., .woff2) in the public/fonts/ directory */
+/* IMPORTANT: Place font files (e.g., .woff2) in the 'public/fonts/' directory */
 @font-face {
   font-family: 'KFGQPC Hafs Uthmanic Script';
-  /* Corrected the filename based on previous errors */
+  /* Ensure 'kfgqpc_hafs_uthmanic_script.woff2' exists in 'public/fonts/' */
   src: url('/fonts/kfgqpc_hafs_uthmanic_script.woff2') format('woff2');
   font-weight: normal;
   font-style: normal;
@@ -18,7 +18,8 @@
 
 @font-face {
   font-family: 'KFGQPC Qaloun Uthmanic Script';
-  src: url('/fonts/kfgqpc_qaloun_uthmanic_script.woff2') format('woff2'); /* Corrected path */
+   /* Ensure 'kfgqpc_qaloun_uthmanic_script.woff2' exists in 'public/fonts/' */
+  src: url('/fonts/kfgqpc_qaloun_uthmanic_script.woff2') format('woff2');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -26,7 +27,8 @@
 
 @font-face {
   font-family: 'KFGQPC Warsh Uthmanic Script';
-  src: url('/fonts/kfgqpc_warsh_uthmanic_script.woff2') format('woff2'); /* Corrected path */
+   /* Ensure 'kfgqpc_warsh_uthmanic_script.woff2' exists in 'public/fonts/' */
+  src: url('/fonts/kfgqpc_warsh_uthmanic_script.woff2') format('woff2');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -142,6 +144,7 @@
     font-family: 'KFGQPC Hafs Uthmanic Script', var(--font-cairo), var(--font-geist-sans);
     /* Add specific styles for Quran text, e.g., line height, word spacing if needed */
     line-height: 2.5; /* Example: Increase line height for readability */
+    text-align: center; /* Center align Quran text */
   }
 
   /* Conditional Quran text fonts based on data-riwaya attribute */
