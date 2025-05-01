@@ -17,7 +17,7 @@
 
 @font-face {
   font-family: 'KFGQPC Qaloun Uthmanic Script';
-  src: url('/fonts/kfgqpc_qaloun_uthmanic_script.woff2') format('woff2'); /* Adjust filename if needed */
+  src: url('/fonts/kfgqpc_qaloun_uthmanic_script.woff2') format('woff2'); /* Corrected path */
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -25,7 +25,7 @@
 
 @font-face {
   font-family: 'KFGQPC Warsh Uthmanic Script';
-  src: url('/fonts/kfgqpc_warsh_uthmanic_script.woff2') format('woff2'); /* Adjust filename if needed */
+  src: url('/fonts/kfgqpc_warsh_uthmanic_script.woff2') format('woff2'); /* Corrected path */
   font-weight: normal;
   font-style: normal;
   font-display: swap;
