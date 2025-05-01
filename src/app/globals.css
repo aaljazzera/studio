@@ -9,7 +9,7 @@
 /* Place font files (e.g., .woff2) in the public/fonts/ directory */
 @font-face {
   font-family: 'KFGQPC Hafs Uthmanic Script';
-  src: url('/fonts/kfgqpc_hafs_uthmanic_script.woff2') format('woff2'); /* Adjust filename if needed */
+  src: url('/fonts/kfgqpc_hafs_uthmanic_script.woff2') format('woff2'); /* Corrected path */
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -115,7 +115,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-cairo; /* Apply Cairo by default */
     /* Apply Cairo font as the primary UI font */
     font-family: var(--font-cairo), var(--font-geist-sans); /* Add Geist Sans as fallback */
   }
