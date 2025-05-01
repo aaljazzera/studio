@@ -120,6 +120,22 @@
     font-family: var(--font-cairo), var(--font-geist-sans); /* Add Geist Sans as fallback */
   }
 
+   /* Explicitly apply Cairo to common UI elements */
+   .font-cairo,
+   button,
+   [role="combobox"], /* SelectTrigger */
+   [role="listbox"] *, /* SelectContent items */
+   [role="menu"] *, /* DropdownMenu items */
+   [role="dialog"] *, /* Dialog content */
+   [role="tooltip"], /* Tooltip content */
+   label,
+   input, /* Apply to input placeholders too */
+   textarea,
+   legend /* SidebarGroupLabel */
+    {
+     font-family: var(--font-cairo), var(--font-geist-sans);
+   }
+
   /* Default Quran text font (Hafs) */
   .quran-text {
     font-family: 'KFGQPC Hafs Uthmanic Script', var(--font-cairo), var(--font-geist-sans);
@@ -138,12 +154,6 @@
 
   .quran-text[data-riwaya="warsh"] {
     font-family: 'KFGQPC Warsh Uthmanic Script', var(--font-cairo), var(--font-geist-sans);
-  }
-
-  /* Apply Cairo font to specific UI elements if needed (Buttons, Selects, etc.) */
-  /* Example: Using Tailwind's arbitrary properties or direct classes */
-  .font-cairo {
-     font-family: var(--font-cairo), var(--font-geist-sans);
   }
 }
 
