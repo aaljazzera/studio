@@ -683,19 +683,11 @@ export function AppHeader() {
         {/* Sources Dialog Trigger */}
         <Dialog>
           <DialogTrigger asChild>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" className="font-cairo">
-                    <BookOpen className="h-5 w-5" />
-                    <span className="sr-only">المصادر والمراجع</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p className="font-cairo">المصادر والمراجع</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+             {/* Simplified: Directly use the button as the trigger */}
+             <Button variant="ghost" size="icon" className="font-cairo">
+                <BookOpen className="h-5 w-5" />
+                <span className="sr-only">المصادر والمراجع</span>
+              </Button>
           </DialogTrigger>
           <DialogContent dir="rtl">
             <DialogHeader>
