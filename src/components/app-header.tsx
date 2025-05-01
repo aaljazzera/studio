@@ -10,10 +10,7 @@ import {
   VolumeX,
   BookOpen,
   Menu,
-  Minimize2,
-  Maximize2,
-  X,
-  Loader2, // Import Loader icon
+  Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -36,6 +33,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogTrigger,
+  DialogClose,
 } from '@/components/ui/dialog';
 import { Slider } from '@/components/ui/slider';
 import { useSidebar, SidebarTrigger } from '@/components/ui/sidebar';
@@ -51,9 +49,10 @@ export function AppHeader() {
   const [isAudioLoading, setIsAudioLoading] = useState(false); // Track audio loading state
   const [volume, setVolume] = useState(50);
   const [isMuted, setIsMuted] = useState(false);
-  const [selectedReciterId, setSelectedReciterId] = useState<string | undefined>(undefined);
+  const [selectedReciterId, setSelectedReciterId] = useState<string | undefined>('37'); // Default to Fares Abbad (ID 37)
   const [selectedAudioSurah, setSelectedAudioSurah] = useState<string | undefined>(undefined);
   const [selectedMoshaf, setSelectedMoshaf] = useState<Moshaf | undefined>(undefined); // Store the selected moshaf object
+  const [isAutoplaying, setIsAutoplaying] = useState(false); // State to manage autoplay
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const { isMobile } = useSidebar();
   const { toast } = useToast(); // Initialize toast
@@ -68,6 +67,63 @@ export function AppHeader() {
     refetchOnWindowFocus: false, // Don't refetch on window focus
   });
 
+
+  // Effect to handle autoplay logic when selectedAudioSurah changes due to autoplay
+  useEffect(() => {
+    if (isAutoplaying && audioRef.current && selectedAudioSurah) {
+      console.log(`Autoplay: Attempting to play Surah ${selectedAudioSurah}`);
+      const sourceReady = prepareAudioSource();
+      if (sourceReady) {
+        console.log("Autoplay: Source prepared, attempting play...");
+        setIsAudioLoading(true); // Set loading true
+        audioRef.current.play().catch(err => {
+          console.error("Autoplay: Error playing next surah:", err);
+          setIsPlaying(false);
+          setIsAudioLoading(false);
+          toast({
+            title: "خطأ في التشغيل التلقائي",
+            description: "لم يتمكن من تشغيل السورة التالية تلقائيًا.",
+            variant: "destructive",
+          });
+        });
+      } else {
+        console.error("Autoplay: Failed to prepare source for next surah.");
+        toast({
+          title: "خطأ في التشغيل التلقائي",
+          description: "فشل في تحضير السورة التالية.",
+          variant: "destructive",
+        });
+      }
+      setIsAutoplaying(false); // Reset autoplay flag
+    }
+  }, [selectedAudioSurah, isAutoplaying, toast]); // Dependencies include selectedAudioSurah and isAutoplaying
+
+
+  // Function to handle audio end event
+  const handleAudioEnd = () => {
+    console.log("Audio ended.");
+    setIsPlaying(false);
+    setIsAudioLoading(false);
+
+    // Autoplay next surah logic
+    if (selectedAudioSurah) {
+      const currentSurahId = parseInt(selectedAudioSurah, 10);
+      if (!isNaN(currentSurahId) && currentSurahId < 114) { // Check if it's not the last surah
+        const nextSurahId = currentSurahId + 1;
+        console.log(`Autoplay: Setting next surah to ${nextSurahId}`);
+        setIsAutoplaying(true); // Set flag to trigger useEffect for autoplay
+        setSelectedAudioSurah(nextSurahId.toString());
+        // The useEffect hook watching selectedAudioSurah and isAutoplaying will handle the actual playback
+      } else {
+        console.log("Autoplay: Last surah reached or invalid current surah ID.");
+        // Optionally, stop playback or loop back to Surah 1
+      }
+    } else {
+        console.log("Autoplay: No current surah selected, cannot autoplay.");
+    }
+  };
+
+
   useEffect(() => {
     // Create audio element only on the client side
     console.log("Initializing Audio element...");
@@ -75,11 +131,6 @@ export function AppHeader() {
     audioRef.current.preload = 'metadata'; // Preload metadata only
 
     // Add event listener for when audio ends
-    const handleAudioEnd = () => {
-        console.log("Audio ended.");
-        setIsPlaying(false);
-        setIsAudioLoading(false);
-    }
     const handleAudioError = (e: Event) => {
         console.error("Audio playback error event:", e);
         const error = (e.target as HTMLAudioElement).error;
@@ -110,33 +161,28 @@ export function AppHeader() {
         });
         setIsPlaying(false); // Reset playing state on error
         setIsAudioLoading(false);
+        setIsAutoplaying(false); // Reset autoplay on error
     };
 
      const handleCanPlay = () => {
          console.log("Audio can play.");
-         // Only set loading to false if we were actually trying to play
+         // Only set loading to false if we were actually trying to play/load
          if (isAudioLoading) {
             setIsAudioLoading(false);
-            // Attempt to play again if needed (e.g., user clicked play while loading)
+             // If it was autoplaying, play should have been called already
+             // If manually playing, check if play was intended
              if (audioRef.current && !audioRef.current.paused) {
-                // Already playing or will play automatically
-             } else if (audioRef.current) {
-                // If paused after loading, maybe play was clicked earlier
-                 audioRef.current.play().then(() => {
-                     setIsPlaying(true);
-                     console.log("Playback started after canplay event.");
-                 }).catch(err => {
-                      console.error("Error playing after canplay:", err);
-                      setIsPlaying(false);
-                      setIsAudioLoading(false);
-                 });
+                 setIsPlaying(true); // Already playing or will play automatically
              }
          }
      };
 
      const handleWaiting = () => {
          console.log("Audio waiting for data (buffering)...");
-         setIsAudioLoading(true);
+         // Only set loading if we are actually trying to play or actively loading
+          if (isPlaying || isAutoplaying) {
+            setIsAudioLoading(true);
+          }
      };
 
       const handlePlaying = () => {
@@ -145,12 +191,20 @@ export function AppHeader() {
           setIsPlaying(true); // Ensure playing state is true
       };
 
+      const handlePause = () => {
+        console.log("Audio paused.");
+        setIsPlaying(false);
+        setIsAudioLoading(false);
+        setIsAutoplaying(false); // Stop autoplay if manually paused
+      };
+
 
     audioRef.current.addEventListener('ended', handleAudioEnd);
     audioRef.current.addEventListener('error', handleAudioError);
     audioRef.current.addEventListener('canplay', handleCanPlay);
     audioRef.current.addEventListener('waiting', handleWaiting);
     audioRef.current.addEventListener('playing', handlePlaying);
+    audioRef.current.addEventListener('pause', handlePause);
 
 
     return () => {
@@ -162,10 +216,11 @@ export function AppHeader() {
         audioRef.current.removeEventListener('canplay', handleCanPlay);
         audioRef.current.removeEventListener('waiting', handleWaiting);
         audioRef.current.removeEventListener('playing', handlePlaying);
+        audioRef.current.removeEventListener('pause', handlePause);
         audioRef.current.pause();
         audioRef.current.src = ''; // Clear src
         audioRef.current.removeAttribute('src'); // Fully remove source attribute
-        audioRef.current.load(); // Abort current/pending network requests
+        // audioRef.current.load(); // Abort current/pending network requests - might not be needed with null assignment
         audioRef.current = null;
       }
     };
@@ -180,13 +235,19 @@ export function AppHeader() {
       const moshafs = reciter?.moshaf ?? [];
       console.log("Available Moshafs for selected reciter:", moshafs);
       if (moshafs.length > 0) {
-        // Select the first Moshaf available for the reciter
-        const firstMoshaf = moshafs[0];
-        console.log("Auto-selecting the first available Moshaf:", firstMoshaf);
-        setSelectedMoshaf(firstMoshaf);
+        // Prioritize 'مرتل' if available, otherwise take the first
+        const murattalMoshaf = moshafs.find(m => m.name.includes('مرتل'));
+        const moshafToSelect = murattalMoshaf || moshafs[0];
+        console.log("Auto-selecting Moshaf:", moshafToSelect);
+        setSelectedMoshaf(moshafToSelect);
       } else {
         console.log("No Moshafs available for this reciter.");
         setSelectedMoshaf(undefined); // Reset if no Moshafs
+        toast({
+          title: "تنبيه",
+          description: "لا توجد مصاحف متاحة لهذا القارئ.",
+          variant: "default",
+        });
       }
     } else {
       console.log("No reciter selected or data not loaded, clearing Moshaf selection.");
@@ -196,12 +257,11 @@ export function AppHeader() {
      if (audioRef.current) {
         console.log("Pausing audio due to reciter change.");
         audioRef.current.pause();
-        setIsPlaying(false);
-        setIsAudioLoading(false);
+        // State updates handled by 'pause' event listener
         // Optionally clear the source immediately
         // audioRef.current.src = '';
      }
-  }, [selectedReciterId, recitersData]);
+  }, [selectedReciterId, recitersData, toast]);
 
 
   // Update audio volume
@@ -226,6 +286,8 @@ export function AppHeader() {
                // Check if the source needs updating
                if (!audioRef.current.src || audioRef.current.src !== audioUrl) {
                     console.log(`Setting new audio source: ${audioUrl}`);
+                    // Reset state before loading new source
+                    setIsPlaying(false);
                     setIsAudioLoading(true); // Set loading state before changing source
                     audioRef.current.src = audioUrl;
                     audioRef.current.load(); // Explicitly load the new source
@@ -233,6 +295,10 @@ export function AppHeader() {
                     return true; // Source prepared
                }
                console.log("Audio source is already correct.");
+               // If source is correct, but we are not loading/playing, ensure loading is false
+                if (!isPlaying && !isAudioLoading) {
+                   setIsAudioLoading(false);
+                }
                return true; // Source is already correct
            } catch (error) {
               console.error("Error preparing audio source:", error);
@@ -242,14 +308,19 @@ export function AppHeader() {
                   variant: "destructive",
               });
                setIsAudioLoading(false);
+               setIsAutoplaying(false);
               return false; // Source preparation failed
            }
        } else {
             console.warn("Cannot prepare audio source: Missing selections, Moshaf or audioRef not ready.");
-            if (!selectedMoshaf) {
-                toast({ title: "تنبيه", description: "لم يتم العثور على مصحف متاح لهذا القارئ.", variant: "default" });
+            if (!selectedReciterId || !selectedAudioSurah) {
+                 // Don't toast if just selections are missing, handle via button disable
+            } else if (!selectedMoshaf) {
+                // Toast only if reciter is selected but no valid moshaf found
+                 toast({ title: "تنبيه", description: "لم يتم العثور على مصحف متاح لهذا القارئ.", variant: "default" });
             }
             setIsAudioLoading(false);
+            setIsAutoplaying(false);
             return false; // Not enough info to prepare source
        }
    };
@@ -265,9 +336,7 @@ export function AppHeader() {
     if (isPlaying) {
       console.log("Pausing audio...");
       audioRef.current.pause();
-      setIsPlaying(false);
-      setIsAudioLoading(false); // Should not be loading if paused
-      console.log("Audio paused.");
+      // State updates handled by 'pause' event listener
     } else {
       console.log("Attempting to play audio...");
       // Ensure selections are made
@@ -306,11 +375,13 @@ export function AppHeader() {
           // Error handling is now mainly done by the 'error' event listener
            setIsPlaying(false);
            setIsAudioLoading(false); // Reset loading state on explicit play error
+           setIsAutoplaying(false);
         }
       } else if (!sourceReady) {
            console.error("Play clicked, but source preparation failed.");
            // Toast should have been shown by prepareAudioSource or other checks
             setIsAudioLoading(false);
+            setIsAutoplaying(false);
       } else if (!audioRef.current.src) {
            console.error("Play clicked, source seems ready, but audioRef.current.src is empty.");
            toast({
@@ -319,6 +390,7 @@ export function AppHeader() {
               variant: "destructive",
            });
             setIsAudioLoading(false);
+            setIsAutoplaying(false);
       }
     }
   };
@@ -346,67 +418,11 @@ export function AppHeader() {
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-background px-4 md:px-6 shadow-sm">
       <div className="flex items-center gap-2">
-         {/* Placeholder for future elements on the right if needed */}
-      </div>
+         {/* Sidebar Trigger on Mobile */}
+         {isMobile && <SidebarTrigger />}
 
-      {/* Audio Controls and Selectors (Left side for RTL) */}
-       <div className="flex items-center gap-2">
-
-        {/* Sources Dialog Trigger */}
-        <Dialog>
-          <DialogTrigger asChild>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" className="font-cairo">
-                    <BookOpen />
-                    <span className="sr-only">المصادر والمراجع</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p className="font-cairo">المصادر والمراجع</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle className="font-cairo">المصادر والمراجع</DialogTitle>
-            </DialogHeader>
-            <DialogDescription className="font-cairo">
-              <p> مصدر واجهة برمجة التطبيقات الصوتية للقرآن الكريم: <a href="https://mp3quran.net/api" target="_blank" rel="noopener noreferrer" className="text-primary underline">mp3quran.net</a> </p>
-               <p>تم بناء هذا التطبيق باستخدام Next.js و Shadcn/UI و Tailwind CSS.</p>
-               <p>(سيتم إضافة تفاصيل إضافية عن المصادر لاحقاً)</p>
-            </DialogDescription>
-          </DialogContent>
-        </Dialog>
-
-         {/* Selectors */}
+         {/* Selectors moved to the left (start in LTR) for better grouping */}
          <div className="hidden md:flex items-center gap-2">
-              {/* Surah Selector */}
-              <Select value={selectedAudioSurah} onValueChange={(value) => {
-                 console.log("Selected Audio Surah changed:", value);
-                 setSelectedAudioSurah(value);
-                 // Optionally pause audio when changing Surah
-                 if (audioRef.current) {
-                     console.log("Pausing audio due to Surah change.");
-                     audioRef.current.pause();
-                     setIsPlaying(false);
-                     setIsAudioLoading(false);
-                 }
-                }} dir="rtl">
-                <SelectTrigger className="w-[150px] font-cairo">
-                  <SelectValue placeholder="اختر سورة" />
-                </SelectTrigger>
-                <SelectContent>
-                  {quranSurahs.map((surah) => (
-                    <SelectItem key={surah.id} value={surah.id.toString()} className="font-cairo">
-                      {surah.id}. {surah.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
              {/* Reciter Selector */}
              {isLoadingReciters ? (
                  <Skeleton className="h-10 w-[180px]" />
@@ -428,20 +444,65 @@ export function AppHeader() {
                      </SelectContent>
                  </Select>
              )}
-        </div>
 
+              {/* Surah Selector */}
+              <Select value={selectedAudioSurah} onValueChange={(value) => {
+                 console.log("Selected Audio Surah changed:", value);
+                 setSelectedAudioSurah(value);
+                 setIsAutoplaying(false); // Stop autoplay when manually changing Surah
+                 // Pause audio when changing Surah only if it was playing
+                 if (isPlaying && audioRef.current) {
+                     console.log("Pausing audio due to Surah change.");
+                     audioRef.current.pause();
+                     // State updates handled by 'pause' event listener
+                 } else if (audioRef.current) {
+                     // If paused or stopped, still prepare the new source without playing
+                      prepareAudioSource(); // Prepare source for potential future play
+                 }
+                }} dir="rtl">
+                <SelectTrigger className="w-[150px] font-cairo">
+                  <SelectValue placeholder="اختر سورة" />
+                </SelectTrigger>
+                <SelectContent>
+                  {quranSurahs.map((surah) => (
+                    <SelectItem key={surah.id} value={surah.id.toString()} className="font-cairo">
+                      {surah.id}. {surah.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+        </div>
+      </div>
+
+      {/* Audio Controls and Dialog (Right side for RTL) */}
+       <div className="flex items-center gap-2">
+
+        {/* Play/Pause Button */}
+         <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+               <Button variant="ghost" size="icon" onClick={handlePlayPause} disabled={isPlayDisabled} className="font-cairo">
+                 {isAudioLoading ? <Loader2 className="animate-spin" /> : isPlaying ? <Pause /> : <Play />}
+                 <span className="sr-only">{isPlaying ? 'إيقاف مؤقت' : 'تشغيل'}</span>
+               </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+               <p className="font-cairo">{isAudioLoading ? 'جاري التحميل...' : (isPlaying ? 'إيقاف مؤقت' : 'تشغيل')}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
 
         {/* Volume Controls */}
         <div className="flex items-center gap-2 w-32">
           <Slider
-            dir="rtl"
-            value={[volume]}
+            dir="ltr" // LTR for visual volume slider makes more sense generally
+            value={[isMuted ? 0 : volume]}
             max={100}
             step={1}
             onValueChange={handleVolumeChange}
             className="w-full cursor-pointer"
             aria-label="التحكم في مستوى الصوت"
-            disabled={isMuted}
+            //disabled={isMuted} // Keep slider enabled, just show 0 when muted
           />
            <TooltipProvider>
             <Tooltip>
@@ -458,24 +519,45 @@ export function AppHeader() {
           </TooltipProvider>
         </div>
 
-         {/* Play/Pause Button */}
-         <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-               <Button variant="ghost" size="icon" onClick={handlePlayPause} disabled={isPlayDisabled} className="font-cairo">
-                 {isAudioLoading ? <Loader2 className="animate-spin" /> : isPlaying ? <Pause /> : <Play />}
-                 <span className="sr-only">{isPlaying ? 'إيقاف مؤقت' : 'تشغيل'}</span>
-               </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-               <p className="font-cairo">{isAudioLoading ? 'جاري التحميل...' : (isPlaying ? 'إيقاف مؤقت' : 'تشغيل')}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
 
-         {/* Sidebar Trigger on Mobile */}
-         {isMobile && <SidebarTrigger />}
+        {/* Sources Dialog Trigger */}
+        <Dialog>
+          <DialogTrigger asChild>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" className="font-cairo">
+                    <BookOpen />
+                    <span className="sr-only">المصادر والمراجع</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="font-cairo">المصادر والمراجع</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </DialogTrigger>
+          <DialogContent dir="rtl">
+            <DialogHeader>
+              <DialogTitle className="font-cairo text-right">المصادر والمراجع</DialogTitle>
+            </DialogHeader>
+            <DialogDescription className="font-cairo text-right space-y-2">
+              <p> مصدر واجهة برمجة التطبيقات الصوتية للقرآن الكريم: <a href="https://mp3quran.net/api" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary/80">mp3quran.net</a> </p>
+               <p>مصدر بيانات السور والقراء مأخوذ من واجهة برمجة التطبيقات المذكورة أعلاه.</p>
+               <p>نصوص القرآن المستخدمة للعرض مأخوذة من ملفات نصية محلية.</p>
+               <p>تم بناء هذا التطبيق باستخدام Next.js و Shadcn/UI و Tailwind CSS.</p>
+            </DialogDescription>
+            <DialogClose asChild>
+                 <Button type="button" variant="secondary" className="font-cairo mt-4">
+                    إغلاق
+                 </Button>
+            </DialogClose>
+          </DialogContent>
+        </Dialog>
+
        </div>
     </header>
   );
 }
+
+    
