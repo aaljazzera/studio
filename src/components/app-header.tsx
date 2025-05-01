@@ -100,7 +100,7 @@ export function AppHeader() {
   useEffect(() => {
     console.log("Initializing audio element...");
     const audioElement = new Audio();
-    audioElement.preload = 'metadata'; // Keep metadata preload
+    audioElement.preload = 'auto'; // Change preload to 'auto'
     audioRef.current = audioElement;
 
     // Error Handler
@@ -120,22 +120,22 @@ export function AppHeader() {
             errorMessage = 'تم إجهاض عملية جلب الصوت.';
             break;
           case MediaError.MEDIA_ERR_NETWORK:
-            errorMessage = `حدث خطأ في الشبكة أثناء جلب الصوت. تأكد من اتصالك بالإنترنت. (الحالة: ${target.networkState})`;
+            errorMessage = `حدث خطأ في الشبكة أثناء جلب الصوت.`;
             break;
           case MediaError.MEDIA_ERR_DECODE:
-             errorMessage = `حدث خطأ أثناء فك تشفير ملف الصوت. قد يكون الملف تالفًا أو غير مدعوم. (الكود: ${error.code})`;
+             errorMessage = `حدث خطأ أثناء فك تشفير ملف الصوت.`;
              console.error(`Detailed DECODE error: Code=${error.code}, Message='${error.message}', Source='${target.src}'`);
             break;
           case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
-            errorMessage = `مصدر الصوت (${target.currentSrc || 'غير متوفر'}) غير مدعوم أو لا يمكن العثور عليه. جرب اختيار قارئ أو سورة أخرى. (الكود: ${error.code})`;
+            errorMessage = `مصدر الصوت غير مدعوم أو لا يمكن العثور عليه.`;
              console.error(`Detailed SRC_NOT_SUPPORTED error: Code=${error.code}, Message='${error.message}', Source='${target.src}'`);
             break;
           default:
-            errorMessage = `حدث خطأ غير معروف (الكود: ${error.code}).`;
+            errorMessage = `حدث خطأ غير معروف في الصوت (الكود: ${error.code}).`;
              console.error(`Detailed UNKNOWN error: Code=${error.code}, Message='${error.message}', Source='${target.src}'`);
         }
       } else if (target.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
-          errorMessage = `تعذر العثور على مصدر الصوت أو أن التنسيق غير مدعوم: ${target.currentSrc || 'غير متوفر'}`;
+          errorMessage = `تعذر العثور على مصدر الصوت أو أن التنسيق غير مدعوم.`;
           console.error(`Audio Error: NETWORK_NO_SOURCE for src: ${target.currentSrc}`);
       } else {
          // Handle cases where the error object might be null but networkState gives a clue
@@ -145,7 +145,7 @@ export function AppHeader() {
          } else if (target.networkState === HTMLMediaElement.NETWORK_EMPTY) {
              errorMessage = "ملف الصوت فارغ أو لم يتم تهيئته.";
          } else {
-            errorMessage = `حدث خطأ غير متوقع مع مصدر الصوت: ${target.src} (NetworkState: ${target.networkState})`;
+            errorMessage = `حدث خطأ غير متوقع مع مصدر الصوت.`;
             console.error(`Audio Error: Unknown state - readyState=${target.readyState}, networkState=${target.networkState}, src=${target.currentSrc}`);
          }
       }
@@ -177,12 +177,6 @@ export function AppHeader() {
         currentAudioRef.play().catch(err => {
           console.error("Play failed during canplay:", err);
           // Error handler (handleAudioError) will be triggered by the failed play promise
-          // Resetting state here might be redundant but ensures UI reflects failure quickly
-          setIsPlaying(false);
-          setIsAudioLoading(false);
-          setIsAutoplaying(false);
-          setPlayIntent(false);
-          // toast({ title: "فشل التشغيل", description: `حدث خطأ أثناء محاولة التشغيل: ${(err as Error).message}`, variant: "destructive"});
         });
       } else {
           console.log(`Canplay: No play intent (${playIntent}) or already playing (${!currentAudioRef.paused}), doing nothing.`);
@@ -278,7 +272,6 @@ export function AppHeader() {
                  currentAudioElement.pause();
                } catch(e) { console.warn("Error pausing during cleanup:", e); }
            }
-           // Stop loading/playback explicitly before changing src or load()
            try {
              currentAudioElement.pause(); // Ensure paused state
            } catch (e) { console.warn("Error pausing during cleanup:", e); }
@@ -452,7 +445,7 @@ export function AppHeader() {
             currentAudioRef.src = audioUrl;
             console.log("Calling audio.load()...");
             // Explicitly call load() after setting src
-            currentAudioRef.load(); // This should trigger 'loadstart' and subsequent events
+            currentAudioRef.load();
             console.log("Audio load initiated.");
             return true;
         } else {
@@ -473,6 +466,7 @@ export function AppHeader() {
       setIsAutoplaying(false);
       return false;
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedReciterId, selectedMoshaf, selectedAudioSurah, toast, isPlaying, isAudioLoading, playIntent]);
 
 
@@ -497,6 +491,7 @@ export function AppHeader() {
             setIsAutoplaying(false); // Stop autoplay
         }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedMoshaf, selectedAudioSurah, prepareAudioSource]); // Trigger when Moshaf or Surah changes
 
 
@@ -614,6 +609,15 @@ export function AppHeader() {
   // Determine if the play button should be disabled
   const isPlayDisabled = (!selectedReciterId || !selectedMoshaf || !selectedAudioSurah);
   const selectedReciterName = recitersData?.reciters.find(r => r.id.toString() === selectedReciterId)?.name;
+
+    // Effect to trigger initial load on mount if selections are present
+  useEffect(() => {
+    if (selectedReciterId && selectedMoshaf && selectedAudioSurah && audioRef.current && !audioRef.current.src) {
+        console.log("Initial mount with selections: preparing audio source.");
+        prepareAudioSource(true); // Force load on initial mount if needed
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedMoshaf]); // Trigger when moshaf is set
 
 
   return (
@@ -767,5 +771,3 @@ export function AppHeader() {
     </header>
   );
 }
-
-      
