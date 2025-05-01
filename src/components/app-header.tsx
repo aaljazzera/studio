@@ -337,11 +337,6 @@ export function AppHeader() {
     setIsMuted(!isMuted);
   };
 
-  // Placeholder functions for window controls
-  const handleMinimize = () => console.log("تصغير");
-  const handleMaximize = () => console.log("تكبير/استعادة");
-  const handleClose = () => console.log("إغلاق");
-
    // Determine if the play button should be disabled
    const isPlayDisabled = !selectedReciterId || !selectedMoshaf || !selectedAudioSurah || isAudioLoading;
 
@@ -351,39 +346,7 @@ export function AppHeader() {
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-background px-4 md:px-6 shadow-sm">
       <div className="flex items-center gap-2">
-         {/* Window Controls (Right side for RTL) - Placeholders */}
-        <div className="flex items-center gap-1">
-            <TooltipProvider>
-                {/* Tooltips remain the same */}
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" onClick={handleClose} className="hover:bg-destructive/80 hover:text-destructive-foreground">
-                        <X className="h-4 w-4" />
-                        <span className="sr-only">إغلاق</span>
-                    </Button>
-                    </TooltipTrigger>
-                    <TooltipContent><p>إغلاق</p></TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" onClick={handleMaximize} className="hover:bg-muted">
-                        <Maximize2 className="h-4 w-4" />
-                        <span className="sr-only">تكبير</span>
-                    </Button>
-                    </TooltipTrigger>
-                    <TooltipContent><p>تكبير</p></TooltipContent>
-                </Tooltip>
-                 <Tooltip>
-                    <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" onClick={handleMinimize} className="hover:bg-muted">
-                        <Minimize2 className="h-4 w-4" />
-                        <span className="sr-only">تصغير</span>
-                    </Button>
-                    </TooltipTrigger>
-                    <TooltipContent><p>تصغير</p></TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
-        </div>
+         {/* Placeholder for future elements on the right if needed */}
       </div>
 
       {/* Audio Controls and Selectors (Left side for RTL) */}
@@ -395,22 +358,22 @@ export function AppHeader() {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon">
+                  <Button variant="ghost" size="icon" className="font-cairo">
                     <BookOpen />
                     <span className="sr-only">المصادر والمراجع</span>
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>المصادر والمراجع</p>
+                  <p className="font-cairo">المصادر والمراجع</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>المصادر والمراجع</DialogTitle>
+              <DialogTitle className="font-cairo">المصادر والمراجع</DialogTitle>
             </DialogHeader>
-            <DialogDescription>
+            <DialogDescription className="font-cairo">
               <p> مصدر واجهة برمجة التطبيقات الصوتية للقرآن الكريم: <a href="https://mp3quran.net/api" target="_blank" rel="noopener noreferrer" className="text-primary underline">mp3quran.net</a> </p>
                <p>تم بناء هذا التطبيق باستخدام Next.js و Shadcn/UI و Tailwind CSS.</p>
                <p>(سيتم إضافة تفاصيل إضافية عن المصادر لاحقاً)</p>
@@ -483,13 +446,13 @@ export function AppHeader() {
            <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" onClick={toggleMute}>
+                <Button variant="ghost" size="icon" onClick={toggleMute} className="font-cairo">
                   {isMuted || volume === 0 ? <VolumeX /> : <Volume2 />}
                   <span className="sr-only">{isMuted ? 'إلغاء الكتم' : 'كتم الصوت'}</span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>{isMuted ? 'إلغاء الكتم' : 'كتم الصوت'}</p>
+                <p className="font-cairo">{isMuted ? 'إلغاء الكتم' : 'كتم الصوت'}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -499,13 +462,13 @@ export function AppHeader() {
          <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-               <Button variant="ghost" size="icon" onClick={handlePlayPause} disabled={isPlayDisabled}>
+               <Button variant="ghost" size="icon" onClick={handlePlayPause} disabled={isPlayDisabled} className="font-cairo">
                  {isAudioLoading ? <Loader2 className="animate-spin" /> : isPlaying ? <Pause /> : <Play />}
                  <span className="sr-only">{isPlaying ? 'إيقاف مؤقت' : 'تشغيل'}</span>
                </Button>
             </TooltipTrigger>
             <TooltipContent>
-               <p>{isAudioLoading ? 'جاري التحميل...' : (isPlaying ? 'إيقاف مؤقت' : 'تشغيل')}</p>
+               <p className="font-cairo">{isAudioLoading ? 'جاري التحميل...' : (isPlaying ? 'إيقاف مؤقت' : 'تشغيل')}</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
