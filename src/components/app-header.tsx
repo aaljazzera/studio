@@ -123,6 +123,7 @@ export function AppHeader() {
                     break;
                 case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
                     errorMessage = `مصدر الصوت (${target.src || 'غير متوفر'}) غير مدعوم أو لا يمكن العثور عليه. قد يكون الرابط غير صحيح أو هناك مشكلة في الخادم.`;
+                    console.error(`Detailed error: Code=${error.code}, Message='${error.message}', Source='${target.src}'`);
                     break;
                 default:
                     errorMessage = `حدث خطأ غير معروف (الكود: ${error.code}).`;
@@ -499,7 +500,7 @@ export function AppHeader() {
         return;
     }
 
-    console.log(`Play/Pause clicked. Current state: isPlaying=${isPlaying}, isAudioLoading=${isAudioLoading}`);
+    console.log(`Play/Pause clicked. Current state: isPlaying=${isPlaying}, isAudioLoading=${isAudioLoading}, src=${audioRef.current.src}, readyState=${audioRef.current.readyState}`);
 
     if (isPlaying) {
       console.log("Pausing audio...");
@@ -526,11 +527,13 @@ export function AppHeader() {
       if (sourceReady && audioRef.current.src && audioRef.current.src !== window.location.href) {
         console.log("Source ready or preparing. Attempting play...");
          // Set loading only if the audio isn't already ready to play
-         // readyState 4 indicates HAVE_ENOUGH_DATA
-         if (audioRef.current.readyState < 4) {
+         // readyState 0=HAVE_NOTHING, 1=HAVE_METADATA, 2=HAVE_CURRENT_DATA, 3=HAVE_FUTURE_DATA, 4=HAVE_ENOUGH_DATA
+         if (audioRef.current.readyState < 3) { // Use 3 (HAVE_FUTURE_DATA) as threshold
+            console.log("readyState < 3, setting isAudioLoading true");
             setIsAudioLoading(true);
          } else {
-             setIsAudioLoading(false); // Ensure loading is off if ready
+             console.log("readyState >= 3, setting isAudioLoading false");
+             setIsAudioLoading(false); // Ensure loading is off if ready enough
          }
         try {
            // Only call play() if the audio is currently paused
@@ -770,4 +773,3 @@ export function AppHeader() {
     </header>
   );
 }
-
