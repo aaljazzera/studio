@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';
 import { quranSurahs } from '@/data/quran-surahs'; // Import surah data
+import { quranRiwayat } from '@/data/quran-riwayat'; // Import riwaya data
 
 // Define the structure of the parsed Quran data
 interface QuranData {
@@ -103,12 +104,14 @@ export function QuranDisplay() {
       if (!selectedSurah) return <p className="text-center text-muted-foreground">الرجاء اختيار سورة لعرض نصها.</p>;
 
       const surahAyahs = quranData[selectedSurah];
+      const riwayaInfo = quranRiwayat.find(r => r.id === selectedRiwaya);
+      const riwayaName = riwayaInfo ? riwayaInfo.name : selectedRiwaya;
 
       if (!surahAyahs || Object.keys(surahAyahs).length === 0) {
           // Check if the surah exists in the loaded data
           const surahInfo = quranSurahs.find(s => s.id.toString() === selectedSurah);
           const surahName = surahInfo ? surahInfo.name : `رقم ${selectedSurah}`;
-           return <p className="text-center text-muted-foreground">لا يوجد نص لسورة {surahName} في الرواية المحددة.</p>;
+           return <p className="text-center text-muted-foreground">لا يوجد نص لسورة {surahName} في رواية {riwayaName}.</p>;
       }
 
        // Get sorted Ayah IDs (e.g., "1:1", "1:2", ..., "2:1", "2:2", ...)
@@ -141,7 +144,7 @@ export function QuranDisplay() {
           return <p>{surahTextWithNumbers}</p>;
       }
 
-  }, [quranData, selectedSurah, viewMode]);
+  }, [quranData, selectedSurah, viewMode, selectedRiwaya]); // Added selectedRiwaya
 
 
   return (
@@ -153,14 +156,14 @@ export function QuranDisplay() {
             <Skeleton className="h-6 w-full" />
             <Skeleton className="h-6 w-full" />
             <Skeleton className="h-6 w-5/6" />
-            <p className="text-center text-muted-foreground">جاري تحميل نص القرآن لرواية {selectedRiwaya}...</p>
+            <p className="text-center text-muted-foreground">جاري تحميل نص القرآن لرواية {quranRiwayat.find(r => r.id === selectedRiwaya)?.name ?? selectedRiwaya}...</p>
           </div>
         )}
         {error && <p className="text-destructive text-center">{error}</p>}
         {!loading && !error && quranData && (
           <div
             className={cn(
-              'quran-text text-right leading-loose transition-opacity duration-300', // Base Quran styles
+              'quran-text text-center leading-loose transition-opacity duration-300', // Base Quran styles + text-center
               viewMode === 'verse' ? 'flex flex-col' : '' // Layout adjustment for verse mode
             )}
             style={{ fontSize: `${fontSize * 1.2}px` }} // Dynamic font size
