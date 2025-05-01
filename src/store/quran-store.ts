@@ -10,8 +10,8 @@ interface QuranState {
   toggleViewMode: () => void;
   selectedSurah: string | undefined;
   setSelectedSurah: (surahId: string | undefined) => void;
-  selectedRiwaya: string | undefined; // Added state for Riwaya
-  setSelectedRiwaya: (riwayaId: string | undefined) => void; // Added setter for Riwaya
+  selectedRiwaya: string; // Ensure it's always defined, default to 'hafs'
+  setSelectedRiwaya: (riwayaId: string) => void; // Ensure it receives a string
 }
 
 const MIN_FONT_SIZE = 12;
@@ -28,12 +28,12 @@ export const useQuranStore = create<QuranState>((set) => ({
     set((state) => ({
       fontSize: Math.max(state.fontSize - FONT_STEP, MIN_FONT_SIZE),
     })),
-  viewMode: 'verse', // Initial view mode set to 'verse'
+  viewMode: 'page', // Default view mode set to 'page'
   toggleViewMode: () =>
     set((state) => ({
       viewMode: state.viewMode === 'page' ? 'verse' : 'page',
     })),
-  selectedSurah: undefined, // Initially no surah selected
+  selectedSurah: '1', // Default to Surah Al-Fatiha (ID 1)
   setSelectedSurah: (surahId) => set({ selectedSurah: surahId }),
   selectedRiwaya: 'hafs', // Default Riwaya to Hafs
   setSelectedRiwaya: (riwayaId) => set({ selectedRiwaya: riwayaId }),

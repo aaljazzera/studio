@@ -2,13 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 
+/* General Font Import (Cairo for UI) */
+/* Cairo is imported via next/font in layout.tsx */
+
+/* KFGQPC Quran Font Imports */
+/* Place font files (e.g., .woff2) in the public/fonts/ directory */
 @font-face {
   font-family: 'KFGQPC Hafs Uthmanic Script';
-  src: url('/fonts/kfgqpc-hafs-uthmanic-script.woff2') format('woff2');
+  src: url('/fonts/kfgqpc_hafs_uthmanic_script.woff2') format('woff2'); /* Adjust filename if needed */
   font-weight: normal;
   font-style: normal;
   font-display: swap;
 }
+
+@font-face {
+  font-family: 'KFGQPC Qaloun Uthmanic Script';
+  src: url('/fonts/kfgqpc_qaloun_uthmanic_script.woff2') format('woff2'); /* Adjust filename if needed */
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'KFGQPC Warsh Uthmanic Script';
+  src: url('/fonts/kfgqpc_warsh_uthmanic_script.woff2') format('woff2'); /* Adjust filename if needed */
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 
 @layer base {
   :root {
@@ -94,11 +116,41 @@
   }
   body {
     @apply bg-background text-foreground;
-    /* Apply Cairo font as the primary font */
+    /* Apply Cairo font as the primary UI font */
     font-family: var(--font-cairo), var(--font-geist-sans); /* Add Geist Sans as fallback */
   }
+
+  /* Default Quran text font (Hafs) */
   .quran-text {
-    /* Ensure Quran text uses its specific font */
+    font-family: 'KFGQPC Hafs Uthmanic Script', var(--font-cairo), var(--font-geist-sans);
+    /* Add specific styles for Quran text, e.g., line height, word spacing if needed */
+    line-height: 2.5; /* Example: Increase line height for readability */
+  }
+
+  /* Conditional Quran text fonts based on data-riwaya attribute */
+  .quran-text[data-riwaya="hafs"] {
     font-family: 'KFGQPC Hafs Uthmanic Script', var(--font-cairo), var(--font-geist-sans);
   }
+
+  .quran-text[data-riwaya="qalun"] {
+    font-family: 'KFGQPC Qaloun Uthmanic Script', var(--font-cairo), var(--font-geist-sans);
+  }
+
+  .quran-text[data-riwaya="warsh"] {
+    font-family: 'KFGQPC Warsh Uthmanic Script', var(--font-cairo), var(--font-geist-sans);
+  }
+
+  /* Apply Cairo font to specific UI elements if needed (Buttons, Selects, etc.) */
+  /* Example: Using Tailwind's arbitrary properties or direct classes */
+  .font-cairo {
+     font-family: var(--font-cairo), var(--font-geist-sans);
+  }
+}
+
+@layer components {
+ /* Add specific component styles using @apply if needed */
+}
+
+@layer utilities {
+ /* Add custom utility classes if needed */
 }
