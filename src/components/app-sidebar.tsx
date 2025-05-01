@@ -38,6 +38,7 @@ import { useQuranStore } from '@/store/quran-store';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { quranSurahs } from '@/data/quran-surahs'; // Import surah data
+import { quranRiwayat } from '@/data/quran-riwayat'; // Import riwaya data
 
 // // Mock data - replace with actual data fetching/state management for novels if needed
 // const novels = [
@@ -59,6 +60,8 @@ export function AppSidebar() {
     toggleViewMode,
     setSelectedSurah, // For displaying Quran text
     selectedSurah,   // For displaying Quran text
+    selectedRiwaya, // State for Riwaya selection
+    setSelectedRiwaya, // Setter for Riwaya selection
   } = useQuranStore();
 
   // const [selectedNovel, setSelectedNovel] = useState<string | undefined>(undefined);
@@ -103,6 +106,24 @@ export function AppSidebar() {
                 </SelectContent>
                 </Select>
             </div> */}
+
+             {/* Quran Riwaya Selection for Text Display */}
+             <div>
+                <Label htmlFor="riwaya-select-text" className="text-sm font-medium mb-1 block font-cairo">الرواية (النص)</Label>
+                <Select value={selectedRiwaya} onValueChange={setSelectedRiwaya} dir="rtl">
+                <SelectTrigger id="riwaya-select-text" className="font-cairo">
+                    <SelectValue placeholder="اختر الرواية" />
+                </SelectTrigger>
+                <SelectContent>
+                    {quranRiwayat.map((riwaya) => (
+                    <SelectItem key={riwaya.id} value={riwaya.id} className="font-cairo">
+                        {riwaya.name}
+                    </SelectItem>
+                    ))}
+                </SelectContent>
+                </Select>
+            </div>
+
 
              {/* Quran Surah Selection for Text Display */}
              <div>

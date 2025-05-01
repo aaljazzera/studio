@@ -52,9 +52,8 @@ export function AppHeader() {
   const [volume, setVolume] = useState(50);
   const [isMuted, setIsMuted] = useState(false);
   const [selectedReciterId, setSelectedReciterId] = useState<string | undefined>(undefined);
-  const [selectedMoshafId, setSelectedMoshafId] = useState<string | undefined>(undefined);
   const [selectedAudioSurah, setSelectedAudioSurah] = useState<string | undefined>(undefined);
-  const [availableMoshafs, setAvailableMoshafs] = useState<Moshaf[]>([]);
+  const [selectedMoshaf, setSelectedMoshaf] = useState<Moshaf | undefined>(undefined); // Store the selected moshaf object
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const { isMobile } = useSidebar();
   const { toast } = useToast(); // Initialize toast
@@ -173,26 +172,25 @@ export function AppHeader() {
   }, [toast]); // Add toast dependency
 
 
-  // Update available Moshafs when selectedReciterId changes
+  // Update selectedMoshaf when selectedReciterId changes
   useEffect(() => {
     console.log("Selected Reciter ID changed:", selectedReciterId);
     if (selectedReciterId && recitersData) {
       const reciter = recitersData.reciters.find(r => r.id.toString() === selectedReciterId);
       const moshafs = reciter?.moshaf ?? [];
       console.log("Available Moshafs for selected reciter:", moshafs);
-      setAvailableMoshafs(moshafs);
-      // Automatically select the first available Moshaf if only one exists, or reset if none
-       if (moshafs.length === 1) {
-         console.log("Auto-selecting the only available Moshaf:", moshafs[0].id.toString());
-         setSelectedMoshafId(moshafs[0].id.toString());
-       } else {
-          console.log("Multiple or no Moshafs available, resetting selection.");
-         setSelectedMoshafId(undefined); // Reset if multiple or no Moshafs
-       }
+      if (moshafs.length > 0) {
+        // Select the first Moshaf available for the reciter
+        const firstMoshaf = moshafs[0];
+        console.log("Auto-selecting the first available Moshaf:", firstMoshaf);
+        setSelectedMoshaf(firstMoshaf);
+      } else {
+        console.log("No Moshafs available for this reciter.");
+        setSelectedMoshaf(undefined); // Reset if no Moshafs
+      }
     } else {
-      console.log("No reciter selected or data not loaded, clearing Moshafs.");
-      setAvailableMoshafs([]);
-      setSelectedMoshafId(undefined);
+      console.log("No reciter selected or data not loaded, clearing Moshaf selection.");
+      setSelectedMoshaf(undefined);
     }
      // Reset audio state when reciter changes
      if (audioRef.current) {
@@ -219,44 +217,38 @@ export function AppHeader() {
   // Prepare audio source (called before play)
    const prepareAudioSource = () => {
        console.log("Attempting to prepare audio source...");
-       console.log("Current selections:", { selectedReciterId, selectedMoshafId, selectedAudioSurah });
-       console.log("Available Moshafs:", availableMoshafs);
-       if (audioRef.current && selectedReciterId && selectedMoshafId && selectedAudioSurah && availableMoshafs.length > 0) {
-           const selectedMoshaf = availableMoshafs.find(m => m.id.toString() === selectedMoshafId);
-           if (selectedMoshaf) {
-               console.log("Selected Moshaf found:", selectedMoshaf);
-               try {
-                  const audioUrl = getAudioUrl(selectedMoshaf.server, selectedAudioSurah);
-                   console.log(`Generated audio URL: ${audioUrl}`);
-                   // Check if the source needs updating
-                   if (!audioRef.current.src || audioRef.current.src !== audioUrl) {
-                        console.log(`Setting new audio source: ${audioUrl}`);
-                        setIsAudioLoading(true); // Set loading state before changing source
-                        audioRef.current.src = audioUrl;
-                        audioRef.current.load(); // Explicitly load the new source
-                        console.log("Audio load initiated.");
-                        return true; // Source prepared
-                   }
-                   console.log("Audio source is already correct.");
-                   return true; // Source is already correct
-               } catch (error) {
-                  console.error("Error preparing audio source:", error);
-                  toast({
-                      title: "خطأ في إعداد الصوت",
-                      description: (error as Error).message || "حدث خطأ أثناء تحضير رابط الصوت.",
-                      variant: "destructive",
-                  });
-                   setIsAudioLoading(false);
-                  return false; // Source preparation failed
+       console.log("Current selections:", { selectedReciterId, selectedMoshaf, selectedAudioSurah });
+       if (audioRef.current && selectedReciterId && selectedMoshaf && selectedAudioSurah) {
+           console.log("Selected Moshaf found:", selectedMoshaf);
+           try {
+              const audioUrl = getAudioUrl(selectedMoshaf.server, selectedAudioSurah);
+               console.log(`Generated audio URL: ${audioUrl}`);
+               // Check if the source needs updating
+               if (!audioRef.current.src || audioRef.current.src !== audioUrl) {
+                    console.log(`Setting new audio source: ${audioUrl}`);
+                    setIsAudioLoading(true); // Set loading state before changing source
+                    audioRef.current.src = audioUrl;
+                    audioRef.current.load(); // Explicitly load the new source
+                    console.log("Audio load initiated.");
+                    return true; // Source prepared
                }
-           } else {
-               console.warn("Selected Moshaf not found in availableMoshafs.");
-               toast({ title: "خطأ", description: "لم يتم العثور على المصحف المحدد.", variant: "destructive"});
+               console.log("Audio source is already correct.");
+               return true; // Source is already correct
+           } catch (error) {
+              console.error("Error preparing audio source:", error);
+              toast({
+                  title: "خطأ في إعداد الصوت",
+                  description: (error as Error).message || "حدث خطأ أثناء تحضير رابط الصوت.",
+                  variant: "destructive",
+              });
                setIsAudioLoading(false);
-                return false;
+              return false; // Source preparation failed
            }
        } else {
-            console.warn("Cannot prepare audio source: Missing selections or audioRef not ready.");
+            console.warn("Cannot prepare audio source: Missing selections, Moshaf or audioRef not ready.");
+            if (!selectedMoshaf) {
+                toast({ title: "تنبيه", description: "لم يتم العثور على مصحف متاح لهذا القارئ.", variant: "default" });
+            }
             setIsAudioLoading(false);
             return false; // Not enough info to prepare source
        }
@@ -279,11 +271,11 @@ export function AppHeader() {
     } else {
       console.log("Attempting to play audio...");
       // Ensure selections are made
-      if (!selectedReciterId || !selectedMoshafId || !selectedAudioSurah) {
+      if (!selectedReciterId || !selectedMoshaf || !selectedAudioSurah) {
          console.warn("Play clicked, but required selections are missing.");
         toast({
             title: "تنبيه",
-            description: "الرجاء اختيار القارئ والمصحف والسورة الصوتية أولاً.",
+            description: "الرجاء اختيار القارئ والسورة الصوتية أولاً.",
             variant: "default",
         });
         return;
@@ -317,7 +309,7 @@ export function AppHeader() {
         }
       } else if (!sourceReady) {
            console.error("Play clicked, but source preparation failed.");
-           // Toast should have been shown by prepareAudioSource
+           // Toast should have been shown by prepareAudioSource or other checks
             setIsAudioLoading(false);
       } else if (!audioRef.current.src) {
            console.error("Play clicked, source seems ready, but audioRef.current.src is empty.");
@@ -351,7 +343,7 @@ export function AppHeader() {
   const handleClose = () => console.log("إغلاق");
 
    // Determine if the play button should be disabled
-   const isPlayDisabled = !selectedReciterId || !selectedMoshafId || !selectedAudioSurah || isAudioLoading;
+   const isPlayDisabled = !selectedReciterId || !selectedMoshaf || !selectedAudioSurah || isAudioLoading;
 
    // Get selected reciter name for display (optional)
     const selectedReciterName = recitersData?.reciters.find(r => r.id.toString() === selectedReciterId)?.name;
@@ -449,40 +441,6 @@ export function AppHeader() {
                       {surah.id}. {surah.name}
                     </SelectItem>
                   ))}
-                </SelectContent>
-              </Select>
-
-             {/* Moshaf Selector */}
-              <Select
-                value={selectedMoshafId}
-                onValueChange={(value) => {
-                    console.log("Selected Moshaf ID changed:", value);
-                    setSelectedMoshafId(value);
-                    // Optionally pause audio when changing Moshaf
-                    if (audioRef.current) {
-                        console.log("Pausing audio due to Moshaf change.");
-                        audioRef.current.pause();
-                        setIsPlaying(false);
-                        setIsAudioLoading(false);
-                    }
-                }}
-                disabled={!selectedReciterId || availableMoshafs.length === 0}
-                dir="rtl"
-              >
-                <SelectTrigger className="w-[150px] font-cairo">
-                    <SelectValue placeholder={selectedReciterId ? (availableMoshafs.length > 0 ? "اختر المصحف" : "لا يوجد مصحف") : "اختر القارئ أولاً"} />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableMoshafs.map((moshaf) => (
-                    <SelectItem key={moshaf.id} value={moshaf.id.toString()} className="font-cairo">
-                      {moshaf.name}
-                    </SelectItem>
-                  ))}
-                  {selectedReciterId && availableMoshafs.length === 0 && (
-                     <SelectItem value="no-moshaf" disabled className="font-cairo">
-                       لا توجد مصاحف متاحة
-                     </SelectItem>
-                  )}
                 </SelectContent>
               </Select>
 
