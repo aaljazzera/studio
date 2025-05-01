@@ -50,9 +50,9 @@ export function AppHeader() {
   const [isAudioLoading, setIsAudioLoading] = useState(false); // Track audio loading state
   const [volume, setVolume] = useState(50);
   const [isMuted, setIsMuted] = useState(false);
-  // Default to Reciter ID 7 (Ahmad Saud) and Al-Fatiha (ID 1)
-  const [selectedReciterId, setSelectedReciterId] = useState<string>('7');
-  const [selectedAudioSurah, setSelectedAudioSurah] = useState<string>('1');
+  // Default to Reciter ID 7 (Ahmed Saud) and Al-Fatiha (ID 1)
+  const [selectedReciterId, setSelectedReciterId] = useState<string>('7'); // Default to Ahmed Saud
+  const [selectedAudioSurah, setSelectedAudioSurah] = useState<string>('1'); // Default to Al-Fatiha
   const [selectedMoshaf, setSelectedMoshaf] = useState<Moshaf | undefined>(undefined); // Store the selected moshaf object
   const [isAutoplaying, setIsAutoplaying] = useState(false); // State to manage autoplay
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -101,42 +101,44 @@ export function AppHeader() {
     audioRef.current = new Audio();
     audioRef.current.preload = 'metadata'; // Preload metadata only
 
-    const audioElement = audioRef.current;
+    const audioElement = audioRef.current; // Capture for use in cleanup
 
     // Wrap play() in a helper with better error handling
     const tryPlaying = async () => {
         if (!audioRef.current || audioRef.current.readyState < 2) { // HAVE_METADATA or less
             console.log("tryPlaying: Aborted, audio not ready or ref missing.");
+            // Ensure state reflects inability to play if intent was present
+            if (playIntentRef.current) {
+                setIsPlaying(false);
+                setIsAudioLoading(false);
+                setIsAutoplaying(false);
+                playIntentRef.current = false;
+                toast({ title: "خطأ في التشغيل", description: "لم يكن الصوت جاهزًا للتشغيل.", variant: "destructive" });
+            }
             return;
         }
         try {
             console.log("tryPlaying: Attempting to execute play()...");
+            setIsAudioLoading(true); // Indicate loading right before play attempt
             await audioRef.current.play();
             console.log("tryPlaying: play() promise resolved.");
-            // 'playing' event should handle state updates
+            // 'playing' event should handle subsequent state updates (setIsPlaying(true), setIsAudioLoading(false))
         } catch (err) {
             console.error("tryPlaying: Error executing play():", err);
-            // Error is primarily handled by the 'error' event listener now
-            // Reset state here as a fallback in case 'error' event doesn't fire reliably
             setIsPlaying(false);
             setIsAudioLoading(false);
             setIsAutoplaying(false);
-            playIntentRef.current = false;
+            playIntentRef.current = false; // Clear intent on error
+            // Error is primarily handled by the 'error' event listener now
             if (err instanceof DOMException) {
                 console.error(`tryPlaying: DOMException during play: ${err.name} - ${err.message}`);
-                // Avoid duplicate toast if handled by the error listener
-                if (err.name === 'NotSupportedError') {
-                     // Toast likely shown by 'error' handler, maybe add context here if needed
-                     console.error("tryPlaying: Media source not supported.");
-                } else if (err.name === 'NotAllowedError') {
+                if (err.name === 'NotAllowedError') {
                      toast({ title: "خطأ في التشغيل", description: "لم يسمح المتصفح بالتشغيل التلقائي. الرجاء النقر على زر التشغيل.", variant: "destructive" });
-                } else if (err.name !== 'AbortError') { // AbortError might happen if we change source quickly
-                    // Avoid toast if already handled by error event?
-                    // toast({ title: "خطأ في التشغيل", description: `لم يتمكن من بدء تشغيل الصوت. (${err.name})`, variant: "destructive" });
+                } else if (err.name === 'NotSupportedError') {
+                    // Error is handled by the 'error' event listener
+                    toast({ title: "خطأ في التشغيل", description: `مصدر الصوت غير مدعوم أو تعذر تحميله. (${err.message})`, variant: "destructive"});
                 }
-            } else {
-                 // Avoid toast if already handled by error event?
-                 // toast({ title: "خطأ في التشغيل", description: `لم يتمكن من بدء تشغيل الصوت. (${(err as Error).message})`, variant: "destructive" });
+                // Avoid duplicate toast if handled by the error listener for NotSupportedError
             }
         }
     };
@@ -189,24 +191,23 @@ export function AppHeader() {
     };
 
      const handleCanPlay = () => {
-         console.log("Audio canplay event. ReadyState:", audioElement.readyState);
+         console.log("Audio canplay event. ReadyState:", audioElement?.readyState);
          // If we intended to play (manual or autoplay), and canplay fires, try playing now.
          // This is the primary place where playback should start after intent is set.
-         if (playIntentRef.current) {
-            if (audioElement.paused) { // Only play if paused
-                console.log("canplay: Play intent detected, attempting play...");
-                playIntentRef.current = false; // Consume the intent
-                tryPlaying();
-            } else {
-                console.log("canplay: Play intent detected but audio is already playing.");
-                 // If it's already playing (e.g., resumed after buffering), ensure states are correct
-                 setIsAudioLoading(false);
-                 setIsPlaying(true);
-                 setIsAutoplaying(false); // Should be off if manually triggered intent led to playing
-            }
+         if (playIntentRef.current && audioElement?.paused) { // Check if audio element exists and is paused
+            console.log("canplay: Play intent detected, attempting play...");
+            // playIntentRef.current = false; // Consume the intent - moved to tryPlaying success/fail
+            tryPlaying();
+         } else if (playIntentRef.current && !audioElement?.paused) {
+             console.log("canplay: Play intent detected but audio is already playing or element missing.");
+             // Ensure state is correct if it's already playing
+             setIsAudioLoading(false);
+             setIsPlaying(true);
+             setIsAutoplaying(false);
+             playIntentRef.current = false; // Consume intent if already playing
          } else {
              console.log("canplay: Audio ready, but no active play intent.");
-              // If it became ready without intent, ensure loading is off
+             // If it became ready without intent, ensure loading is off
              if (isAudioLoading && !isPlaying) {
                  setIsAudioLoading(false);
              }
@@ -240,7 +241,6 @@ export function AppHeader() {
              console.log("Pause event ignored for state update due to loading/autoplay/intent.");
         }
         // If user pauses manually (not due to buffering/autoplay), clear the play intent.
-        // Check if the pause was likely user-initiated (not loading/autoplaying).
         if (!isAudioLoading && !isAutoplaying && playIntentRef.current) {
              console.log("Manual-like pause detected, clearing play intent.");
              playIntentRef.current = false;
@@ -255,39 +255,39 @@ export function AppHeader() {
        const handleLoadStart = () => {
            console.log("Audio loadstart event.");
            // Set loading true ONLY if there's an active intent to play or autoplay is active.
+           // Don't set loading if src is being set but no intention to play immediately.
            if (playIntentRef.current || isAutoplaying) {
                 console.log("loadstart: Setting isAudioLoading true due to play intent/autoplay.");
                 setIsAudioLoading(true);
            } else {
                console.log("loadstart: Detected, but not showing loader as play wasn't intended.");
-                // If src is changed but no play intent, ensure loading is off
+                // Ensure loading is off if src is changed without play intent
                 setIsAudioLoading(false);
            }
        };
 
         const handleLoadedMetadata = () => {
-            console.log("Audio loadedmetadata event. Duration:", audioElement.duration);
+            console.log("Audio loadedmetadata event. Duration:", audioElement?.duration);
             // Metadata loaded. Check if we need to play.
             // 'canplay' is generally a better trigger for starting playback.
             // If loading state was on, but we got metadata, maybe turn off loader if readyState allows.
-            if (isAudioLoading && audioElement.readyState >= 2 && !playIntentRef.current && !isPlaying) {
+             if (isAudioLoading && audioElement?.readyState >= 2 && !playIntentRef.current && !isPlaying) {
                  console.log("loadedmetadata: Turning off loader as metadata is loaded and no active play intent.");
-                // setIsAudioLoading(false); // Let canplay handle this more reliably
-            }
+                 // Let canplay handle this more reliably
+                 // setIsAudioLoading(false);
+             }
         };
 
-        // Removed loadeddata handler as 'canplay' is more robust
 
         // Attach listeners
-        audioElement.addEventListener('ended', handleAudioEnd);
-        audioElement.addEventListener('error', handleAudioError);
-        audioElement.addEventListener('canplay', handleCanPlay);
-        audioElement.addEventListener('waiting', handleWaiting);
-        audioElement.addEventListener('playing', handlePlaying);
-        audioElement.addEventListener('pause', handlePause);
-        audioElement.addEventListener('loadstart', handleLoadStart);
-        audioElement.addEventListener('loadedmetadata', handleLoadedMetadata);
-        // audioElement.addEventListener('loadeddata', handleLoadedData);
+        audioElement?.addEventListener('ended', handleAudioEnd);
+        audioElement?.addEventListener('error', handleAudioError);
+        audioElement?.addEventListener('canplay', handleCanPlay);
+        audioElement?.addEventListener('waiting', handleWaiting);
+        audioElement?.addEventListener('playing', handlePlaying);
+        audioElement?.addEventListener('pause', handlePause);
+        audioElement?.addEventListener('loadstart', handleLoadStart);
+        audioElement?.addEventListener('loadedmetadata', handleLoadedMetadata);
 
 
     return () => {
@@ -301,12 +301,14 @@ export function AppHeader() {
         audioElement.removeEventListener('pause', handlePause);
         audioElement.removeEventListener('loadstart', handleLoadStart);
         audioElement.removeEventListener('loadedmetadata', handleLoadedMetadata);
-        // audioElement.removeEventListener('loadeddata', handleLoadedData);
         audioElement.pause();
-        // Setting src to empty string is often recommended for cleanup
         audioElement.src = '';
         audioElement.removeAttribute('src');
-        audioElement.load(); // Reset
+        try {
+           audioElement.load(); // Reset
+        } catch (e) {
+            console.warn("Error during audio cleanup load():", e);
+        }
       }
       playIntentRef.current = false; // Ensure reset on unmount
     };
@@ -331,17 +333,18 @@ export function AppHeader() {
         const oldServer = selectedMoshaf?.server;
         console.log("Auto-selecting Moshaf:", {id: moshafToSelect.id, name: moshafToSelect.name, server: moshafToSelect.server});
 
+        // Only update state and potentially audio if the moshaf actually changes
         if (oldMoshafId !== moshafToSelect.id || oldServer !== moshafToSelect.server) {
            console.log("Setting selected Moshaf state.");
-          setSelectedMoshaf(moshafToSelect);
-           // Clear current source and state if reciter/moshaf changes and audio is paused
+          setSelectedMoshaf(moshafToSelect); // This triggers the next useEffect to prepare source
+
+          // Clear current source and state if reciter/moshaf changes and audio is paused
            if (audioRef.current && audioRef.current.paused) {
                 console.log("Clearing audio source/state due to reciter/moshaf change while paused.");
-                // Let prepareAudioSource handle setting the new src
+                // Let prepareAudioSource handle setting the new src in the next effect
                 setIsPlaying(false);
                 setIsAudioLoading(false); // Reset loading state
                 playIntentRef.current = false; // Reset intent
-                // prepareAudioSource will be called by the next effect
            } else if (audioRef.current && !audioRef.current.paused) {
                // If playing, pause first before changing source implicitly later
                 console.log("Pausing audio due to reciter/moshaf change while playing.");
@@ -355,13 +358,12 @@ export function AppHeader() {
         console.log("No Moshafs available for this reciter. Resetting selection.");
         if (selectedMoshaf) { // Only reset if it was previously set
           setSelectedMoshaf(undefined);
-           if (audioRef.current) { // Check if audioRef exists
+           if (audioRef.current) {
                console.log("Clearing audio source/state due to no moshafs available.");
-                if (!audioRef.current.paused) audioRef.current.pause(); // Pause if playing
-                // Setting src to empty string is better for cleanup
+                if (!audioRef.current.paused) audioRef.current.pause();
                 audioRef.current.src = '';
                 audioRef.current.removeAttribute('src');
-                audioRef.current.load(); // Reset audio element state
+                audioRef.current.load();
                 setIsPlaying(false);
                 setIsAudioLoading(false);
                 playIntentRef.current = false;
@@ -394,16 +396,17 @@ export function AppHeader() {
          }
     }
      // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedReciterId, recitersData, toast, isLoadingReciters]); // Removed selectedMoshaf dependency
+  }, [selectedReciterId, recitersData, toast, isLoadingReciters]);
 
 
   // Prepare audio source function (DOES NOT PLAY)
   // Returns true if source was set/updated, false otherwise.
    const prepareAudioSource = React.useCallback((forceLoad: boolean = false): boolean => {
        console.log("Attempting to prepare audio source...");
-       console.log("Current state:", { reciterId: selectedReciterId, moshaf: selectedMoshaf?.id, surah: selectedAudioSurah, currentSrc: audioRef.current?.src, isPlaying, isAudioLoading, playIntent: playIntentRef.current });
+       const currentAudioRef = audioRef.current; // Capture ref for stability
+       console.log("Current state:", { reciterId: selectedReciterId, moshaf: selectedMoshaf?.id, surah: selectedAudioSurah, currentSrc: currentAudioRef?.src, isPlaying, isAudioLoading, playIntent: playIntentRef.current });
 
-       if (!audioRef.current) {
+       if (!currentAudioRef) {
            console.error("prepareAudioSource: audioRef is null.");
            return false;
        }
@@ -411,12 +414,12 @@ export function AppHeader() {
         // Check if selections are missing
        if (!selectedReciterId || !selectedMoshaf || !selectedAudioSurah) {
            console.warn("prepareAudioSource: Cannot prepare source: Missing selections (Reciter, Moshaf, or Surah).");
-            if (audioRef.current.src && audioRef.current.src !== window.location.href && audioRef.current.src !== '') {
+            if (currentAudioRef.src && currentAudioRef.src !== window.location.href && currentAudioRef.src !== '') {
                 console.log("Clearing potentially invalid audio source due to missing selections.");
-                if (!audioRef.current.paused) audioRef.current.pause();
-                audioRef.current.src = '';
-                audioRef.current.removeAttribute('src');
-                audioRef.current.load();
+                if (!currentAudioRef.paused) currentAudioRef.pause();
+                currentAudioRef.src = '';
+                currentAudioRef.removeAttribute('src');
+                currentAudioRef.load();
                 setIsPlaying(false);
                 setIsAudioLoading(false);
                 playIntentRef.current = false;
@@ -428,11 +431,11 @@ export function AppHeader() {
         if (!selectedMoshaf.server || typeof selectedMoshaf.server !== 'string' || !(selectedMoshaf.server.startsWith('http://') || selectedMoshaf.server.startsWith('https://'))) {
             console.error(`prepareAudioSource: Invalid server URL in selected Moshaf: ${selectedMoshaf.server}`);
             toast({ title: "خطأ", description: `رابط المصحف (${selectedMoshaf.name}) غير صالح أو مفقود.`, variant: "destructive"});
-            if (audioRef.current.src && audioRef.current.src !== window.location.href && audioRef.current.src !== '') {
-                 if (!audioRef.current.paused) audioRef.current.pause();
-                 audioRef.current.src = '';
-                 audioRef.current.removeAttribute('src');
-                 audioRef.current.load();
+            if (currentAudioRef.src && currentAudioRef.src !== window.location.href && currentAudioRef.src !== '') {
+                 if (!currentAudioRef.paused) currentAudioRef.pause();
+                 currentAudioRef.src = '';
+                 currentAudioRef.removeAttribute('src');
+                 currentAudioRef.load();
                  setIsPlaying(false);
                  setIsAudioLoading(false);
                  playIntentRef.current = false;
@@ -447,11 +450,11 @@ export function AppHeader() {
            if (!audioUrl) {
                console.error("prepareAudioSource: Generated audio URL is invalid (empty string).");
                 toast({ title: "خطأ", description: "فشل في بناء رابط الصوت.", variant: "destructive"});
-                if (audioRef.current.src && audioRef.current.src !== window.location.href && audioRef.current.src !== '') {
-                     if (!audioRef.current.paused) audioRef.current.pause();
-                     audioRef.current.src = '';
-                     audioRef.current.removeAttribute('src');
-                     audioRef.current.load();
+                if (currentAudioRef.src && currentAudioRef.src !== window.location.href && currentAudioRef.src !== '') {
+                     if (!currentAudioRef.paused) currentAudioRef.pause();
+                     currentAudioRef.src = '';
+                     currentAudioRef.removeAttribute('src');
+                     currentAudioRef.load();
                      setIsPlaying(false);
                      setIsAudioLoading(false);
                      playIntentRef.current = false;
@@ -459,7 +462,7 @@ export function AppHeader() {
                 return false;
            }
 
-           const currentSrc = audioRef.current.src;
+           const currentSrc = currentAudioRef.src;
            // Consider empty string or page URL as not set
            const isSrcEffectivelySet = currentSrc && currentSrc !== window.location.href && currentSrc !== '';
            const needsUpdate = forceLoad || !isSrcEffectivelySet || currentSrc !== audioUrl;
@@ -467,29 +470,30 @@ export function AppHeader() {
            if (needsUpdate) {
                 console.log(`Setting new audio source: ${audioUrl} (forceLoad: ${forceLoad}, isSrcSet: ${isSrcEffectivelySet}, urlMismatch: ${currentSrc !== audioUrl})`);
                 // Pause might not be necessary if load() is called, but belt-and-suspenders
-                if (!audioRef.current.paused) {
+                if (!currentAudioRef.paused) {
                      console.log("Pausing before changing source.");
-                     audioRef.current.pause();
+                     currentAudioRef.pause();
                      // State updates handled by pause event
                 }
                 // Reset state related to the old source BEFORE setting new src
                 setIsPlaying(false); // Ensure isPlaying is false before loading new source
-                // If forceLoad is true, it implies an intent (like autoplay), so keep playIntentRef.current as is.
-                // If forceLoad is false, clear any old intent.
+                // If forceLoad is true, it implies an intent (like autoplay or first load), so keep playIntentRef.current as is.
+                // If forceLoad is false (normal selection change), clear any old intent.
                 if (!forceLoad) {
                     playIntentRef.current = false;
                 }
                  // Let loadstart event handle setting isAudioLoading = true if needed based on intent
-                // setIsAudioLoading(true); // Set loading immediately? Handled by loadstart now
-                audioRef.current.src = audioUrl;
+                 // setIsAudioLoading(true); // Set loading immediately? Handled by loadstart now
+                currentAudioRef.src = audioUrl;
                 console.log("Calling audio.load()...");
-                audioElement.load(); // Use the element from the outer scope
+                 // Fix: Use the captured ref 'currentAudioRef' instead of the undefined 'audioElement'
+                currentAudioRef.load();
                 console.log("Audio load initiated.");
                 return true;
            } else {
                console.log("Audio source is already correct. No preparation needed.");
                 // Ensure loading state is correct if source is already set
-                if (isAudioLoading && audioRef.current.readyState >= 3) { // HAVE_CURRENT_DATA or more
+                if (isAudioLoading && currentAudioRef.readyState >= 3) { // HAVE_CURRENT_DATA or more
                    console.log("Source correct, ready state sufficient, ensuring loading is false.");
                    setIsAudioLoading(false);
                 }
@@ -509,20 +513,20 @@ export function AppHeader() {
            return false;
        }
        // eslint-disable-next-line react-hooks/exhaustive-deps
-   }, [selectedReciterId, selectedMoshaf, selectedAudioSurah, toast]); // Added audioElement to dependencies
+   }, [selectedReciterId, selectedMoshaf, selectedAudioSurah, toast, isPlaying, isAudioLoading]); // Added isPlaying, isAudioLoading
 
 
    // Effect to prepare the source when selections change OR on initial load with defaults
    useEffect(() => {
-       if (selectedMoshaf) {
-            console.log("Selection/Moshaf changed, preparing audio source (no force play)...");
+       if (selectedMoshaf && selectedAudioSurah) {
+            console.log("Selection/Moshaf changed, preparing audio source (force load only if needed)...");
             // Force load only if src is currently empty, points to the page URL, or is actually empty string
-            const shouldForceLoad = !audioRef.current?.src || audioRef.current.src === window.location.href || audioRef.current.src === '';
+             const shouldForceLoad = !audioRef.current?.src || audioRef.current.src === window.location.href || audioRef.current.src === '';
             prepareAudioSource(shouldForceLoad);
        } else {
-           console.log("Moshaf not yet selected, skipping source preparation.");
+           console.log("Moshaf or Surah not yet selected, skipping source preparation.");
             if (audioRef.current?.src && audioRef.current.src !== window.location.href && audioRef.current.src !== '') {
-                console.log("Clearing audio source because Moshaf is undefined.");
+                console.log("Clearing audio source because Moshaf or Surah is undefined.");
                 if (!audioRef.current.paused) audioRef.current.pause();
                 audioRef.current.src = '';
                 audioRef.current.removeAttribute('src');
@@ -533,7 +537,8 @@ export function AppHeader() {
             }
        }
        // eslint-disable-next-line react-hooks/exhaustive-deps
-   }, [selectedMoshaf, selectedAudioSurah]); // Trigger when Moshaf or Surah changes, prepareAudioSource is memoized
+   }, [selectedMoshaf, selectedAudioSurah]); // Trigger when Moshaf or Surah changes
+
 
    // Effect to handle autoplay logic
   useEffect(() => {
@@ -583,7 +588,8 @@ export function AppHeader() {
     }
 
     const readyState = audioRef.current.readyState;
-    console.log(`Play/Pause clicked. Current state: isPlaying=${isPlaying}, isAudioLoading=${isAudioLoading}, src=${audioRef.current.src}, readyState=${readyState}, playIntent=${playIntentRef.current}`);
+    const currentSrc = audioRef.current.src;
+    console.log(`Play/Pause clicked. Current state: isPlaying=${isPlaying}, isAudioLoading=${isAudioLoading}, src=${currentSrc}, readyState=${readyState}, playIntent=${playIntentRef.current}`);
 
     if (isPlaying) {
       console.log("Pausing audio...");
@@ -607,8 +613,7 @@ export function AppHeader() {
        playIntentRef.current = true;
 
       // Ensure the source is prepared/updated, force load if src is invalid or missing
-      const src = audioRef.current.src;
-      const shouldForceLoad = !src || src === window.location.href || src === '';
+      const shouldForceLoad = !currentSrc || currentSrc === window.location.href || currentSrc === '';
       const sourceReadyOrPreparing = prepareAudioSource(shouldForceLoad);
       console.log(`Source preparation result: ${sourceReadyOrPreparing}`);
 
@@ -616,23 +621,24 @@ export function AppHeader() {
           console.log("Source ready or preparing. Play intent set, waiting for 'canplay'.");
          // Set loading only if the audio isn't already ready to play enough
          // readyState 0=HAVE_NOTHING, 1=HAVE_METADATA, 2=HAVE_CURRENT_DATA, 3=HAVE_FUTURE_DATA, 4=HAVE_ENOUGH_DATA
-         // Use HAVE_METADATA (1) as threshold, 'canplay' will trigger play later if intent is set.
-         if (readyState < 2 && !isAudioLoading) {
+         if (readyState < 2 && !isAudioLoading) { // Use HAVE_CURRENT_DATA as threshold
             console.log("readyState < 2, setting isAudioLoading true");
             setIsAudioLoading(true);
-         } else if (readyState >= 3) {
-             // If already ready enough, try playing immediately (might still need 'canplay' in some browsers)
-             console.log("readyState >= 3, attempting immediate play (fallback)...");
+         } else if (readyState >= 2) {
+             // If already ready enough, attempt play immediately via tryPlaying
+             // This helps in cases where 'canplay' might not fire again if already playable
+             console.log("readyState >= 2, attempting immediate play via tryPlaying()...");
              if (audioRef.current.paused) {
-                // tryPlaying(); // Let canplay handle primarily
+                 // tryPlaying also sets loading state temporarily
+                 tryPlaying();
              } else {
-                 console.log("readyState >= 3, but audio is not paused. Events should sync state.");
+                 console.log("readyState >= 2, but audio is not paused. Events should sync state.");
                  if (isAudioLoading) setIsAudioLoading(false); // Ensure loading off if playing
                  if (!isPlaying) setIsPlaying(true); // Ensure playing is true
                  playIntentRef.current = false; // Consume intent if already playing
              }
          }
-          // DO NOT call play() directly here. Rely on 'canplay'.
+          // The 'canplay' event handler is the primary trigger for tryPlaying()
       } else {
            console.error("Play clicked, but source preparation failed.");
            setIsAudioLoading(false);
@@ -666,7 +672,9 @@ export function AppHeader() {
   };
 
    // Determine if the play button should be disabled
-   const isPlayDisabled = !selectedReciterId || !selectedMoshaf || !selectedAudioSurah || (isAudioLoading && !isPlaying); // Allow pausing while loading
+    // Disable if loading AND not currently playing (allow pausing while buffering)
+    // Also disable if required selections are missing.
+   const isPlayDisabled = (!selectedReciterId || !selectedMoshaf || !selectedAudioSurah) || (isAudioLoading && !isPlaying);
 
    // Get selected reciter name for display (optional)
     const selectedReciterName = recitersData?.reciters.find(r => r.id.toString() === selectedReciterId)?.name;
@@ -755,7 +763,7 @@ export function AppHeader() {
                </Button>
             </TooltipTrigger>
             <TooltipContent>
-               <p className="font-cairo">{isAudioLoading ? 'جاري التحميل...' : (isPlaying ? 'إيقاف مؤقت' : 'تشغيل')}</p>
+               <p className="font-cairo">{isPlayDisabled ? 'غير متاح' : (isAudioLoading ? 'جاري التحميل...' : (isPlaying ? 'إيقاف مؤقت' : 'تشغيل'))}</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -836,4 +844,3 @@ export function AppHeader() {
     </header>
   );
 }
- 
