@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -49,8 +48,9 @@ export function AppHeader() {
   const [isAudioLoading, setIsAudioLoading] = useState(false); // Track audio loading state
   const [volume, setVolume] = useState(50);
   const [isMuted, setIsMuted] = useState(false);
-  const [selectedReciterId, setSelectedReciterId] = useState<string | undefined>('37'); // Default to Fares Abbad (ID 37)
-  const [selectedAudioSurah, setSelectedAudioSurah] = useState<string | undefined>('1'); // Default to Al-Fatiha (ID 1)
+  // Default to Fares Abbad (ID 37) and Al-Fatiha (ID 1)
+  const [selectedReciterId, setSelectedReciterId] = useState<string | undefined>('37');
+  const [selectedAudioSurah, setSelectedAudioSurah] = useState<string | undefined>('1');
   const [selectedMoshaf, setSelectedMoshaf] = useState<Moshaf | undefined>(undefined); // Store the selected moshaf object
   const [isAutoplaying, setIsAutoplaying] = useState(false); // State to manage autoplay
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -119,14 +119,21 @@ export function AppHeader() {
                     errorMessage = 'حدث خطأ أثناء فك تشفير ملف الصوت.';
                     break;
                 case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
-                    errorMessage = `مصدر الصوت (${target.src || 'غير متوفر'}) غير مدعوم أو لا يمكن العثور عليه.`;
+                    errorMessage = `مصدر الصوت (${target.src || 'غير متوفر'}) غير مدعوم أو لا يمكن العثور عليه. قد يكون الرابط غير صحيح أو هناك مشكلة في الخادم.`;
                     break;
                 default:
                     errorMessage = `حدث خطأ غير معروف (الكود: ${error.code}).`;
             }
-        } else if (!target.src) {
-            errorMessage = "لم يتم تعيين مصدر الصوت."
+            console.error(`MediaError code: ${error.code}, message: ${error.message || 'N/A'}`);
+        } else if (!target.src || target.src === window.location.href) { // Check if src is missing or points to the page itself
+             errorMessage = "لم يتم تعيين مصدر صوت صالح. الرجاء التأكد من اختيار القارئ والسورة.";
+             console.error("Audio error occurred but MediaError object is null or src is invalid/missing.");
+        } else {
+             // Generic error if no error code and src seems present
+             errorMessage = `حدث خطأ غير متوقع أثناء التعامل مع مصدر الصوت: ${target.src}`;
+             console.error("Audio error occurred but MediaError object is null. Source:", target.src);
         }
+
 
         toast({
             title: "خطأ في الصوت",
@@ -228,7 +235,7 @@ export function AppHeader() {
 
   // Effect to select the appropriate Moshaf when reciter changes or data loads
   useEffect(() => {
-    console.log("Reciter/Data Check: ID=", selectedReciterId, "Data loaded=", !!recitersData);
+    console.log(`Reciter/Data Check: ID=${selectedReciterId}, Data loaded=${!!recitersData}, Loading=${isLoadingReciters}`);
     if (selectedReciterId && recitersData?.reciters) {
       const reciter = recitersData.reciters.find(r => r.id.toString() === selectedReciterId);
        console.log("Found reciter:", reciter?.name);
@@ -249,7 +256,8 @@ export function AppHeader() {
           // Clear/pause audio ONLY if the source will actually change due to this selection
            if (audioRef.current) {
                const potentialNewUrl = getAudioUrl(moshafToSelect.server, selectedAudioSurah || '1'); // Get potential new URL
-               if (audioRef.current.src !== potentialNewUrl) {
+                console.log("Checking if URL needs update:", { current: audioRef.current.src, potential: potentialNewUrl });
+               if (audioRef.current.src && audioRef.current.src !== potentialNewUrl) {
                     console.log("Pausing/Clearing audio due to Moshaf change.");
                     audioRef.current.pause(); // Pause first
                     audioRef.current.removeAttribute('src'); // Remove src
@@ -257,7 +265,7 @@ export function AppHeader() {
                     setIsPlaying(false);
                     setIsAudioLoading(false); // Ensure loading is false when source is cleared
                } else {
-                   console.log("Moshaf changed, but URL for current Surah remains the same.");
+                   console.log("Moshaf changed, but URL for current Surah remains the same or src is empty.");
                }
            }
         } else {
@@ -294,8 +302,8 @@ export function AppHeader() {
          });
          setSelectedMoshaf(undefined); // Reset moshaf if data failed
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedReciterId, recitersData, toast, isLoadingReciters]); // Dependencies: reciter ID, data, loading state
+     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedReciterId, recitersData, toast, isLoadingReciters, selectedAudioSurah]); // Added selectedAudioSurah dependency
 
   // Prepare audio source function (DOES NOT PLAY)
   // Returns true if source was set/updated, false otherwise.
@@ -308,10 +316,10 @@ export function AppHeader() {
            return false;
        }
        if (!selectedReciterId || !selectedMoshaf || !selectedAudioSurah) {
-           console.warn("prepareAudioSource: Missing required selections.");
+           console.warn("prepareAudioSource: Missing required selections (Reciter, Moshaf, or Surah).");
            // Clear existing source if selections become invalid
-            if (audioRef.current.src) {
-                console.log("Clearing invalid audio source.");
+            if (audioRef.current.src && audioRef.current.src !== window.location.href) { // Avoid clearing if src is just the page URL
+                console.log("Clearing invalid audio source due to missing selections.");
                 audioRef.current.pause();
                 audioRef.current.removeAttribute('src');
                 audioRef.current.load();
@@ -321,18 +329,42 @@ export function AppHeader() {
            return false;
        }
 
+        // Validate Moshaf server URL before proceeding
+        if (!selectedMoshaf.server || typeof selectedMoshaf.server !== 'string' || !(selectedMoshaf.server.startsWith('http://') || selectedMoshaf.server.startsWith('https://'))) {
+            console.error(`prepareAudioSource: Invalid server URL in selected Moshaf: ${selectedMoshaf.server}`);
+            toast({ title: "خطأ", description: `رابط المصحف (${selectedMoshaf.name}) غير صالح أو مفقود.`, variant: "destructive"});
+            // Clear source if it might be based on the invalid Moshaf
+            if (audioRef.current.src) {
+                 audioRef.current.pause();
+                 audioRef.current.removeAttribute('src');
+                 audioRef.current.load();
+                 setIsPlaying(false);
+                 setIsAudioLoading(false);
+            }
+            return false;
+        }
+
+
        try {
            const audioUrl = getAudioUrl(selectedMoshaf.server, selectedAudioSurah);
            console.log(`Generated audio URL: ${audioUrl}`);
 
            if (!audioUrl) {
-               console.error("prepareAudioSource: Generated audio URL is invalid.");
-                toast({ title: "خطأ", description: "فشل في بناء رابط الصوت.", variant: "destructive"});
+               console.error("prepareAudioSource: Generated audio URL is invalid (empty string). This usually means invalid input to getAudioUrl.");
+                toast({ title: "خطأ", description: "فشل في بناء رابط الصوت. تأكد من صحة بيانات المصحف والسورة.", variant: "destructive"});
+                 // Clear potentially invalid source
+                if (audioRef.current.src) {
+                     audioRef.current.pause();
+                     audioRef.current.removeAttribute('src');
+                     audioRef.current.load();
+                     setIsPlaying(false);
+                     setIsAudioLoading(false);
+                }
                 return false;
            }
 
            // Check if the source needs updating or if forceLoad is true
-           if (forceLoad || !audioRef.current.src || audioRef.current.src !== audioUrl) {
+           if (forceLoad || !audioRef.current.src || audioRef.current.src === window.location.href || audioRef.current.src !== audioUrl) {
                 console.log(`Setting new audio source: ${audioUrl}`);
                 audioRef.current.pause(); // Pause before changing source
                 setIsPlaying(false); // Update state immediately
@@ -370,8 +402,9 @@ export function AppHeader() {
         // Prepare source only if Moshaf is actually selected (which depends on reciter data)
         if (selectedMoshaf) {
              console.log("Selection/Moshaf changed, preparing audio source (no force play)...");
-             // Prepare source, force load if src is currently empty
-            prepareAudioSource(!audioRef.current?.src);
+             // Prepare source, force load if src is currently empty or points to the page URL
+             const shouldForceLoad = !audioRef.current?.src || audioRef.current.src === window.location.href;
+            prepareAudioSource(shouldForceLoad);
         } else {
             console.log("Moshaf not yet selected, skipping source preparation.");
         }
@@ -408,7 +441,7 @@ export function AppHeader() {
         setIsAutoplaying(false); // Reset flag if conditions aren't right
     }
      // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedAudioSurah, isAutoplaying]); // Dependencies: only surah and autoplay flag
+  }, [selectedAudioSurah, isAutoplaying, selectedMoshaf, prepareAudioSource, toast]); // Added selectedMoshaf, prepareAudioSource, toast
 
 
   // Update audio volume effect
@@ -450,10 +483,11 @@ export function AppHeader() {
       const sourceReady = prepareAudioSource(true);
       console.log(`Source preparation result: ${sourceReady}`);
 
-      if (sourceReady && audioRef.current.src) {
+      if (sourceReady && audioRef.current.src && audioRef.current.src !== window.location.href) {
         console.log("Source ready. Attempting play...");
          // setIsAudioLoading(true); // Set loading visually, 'playing' or 'error' event will clear it
         try {
+           console.log("Audio is paused, calling play()...");
           await audioRef.current.play();
           console.log("play() promise resolved.");
           // 'playing' event listener should set isPlaying = true and isAudioLoading = false
@@ -465,16 +499,20 @@ export function AppHeader() {
            setIsAudioLoading(false);
            setIsAutoplaying(false); // Ensure autoplay stops on error
            // Fallback toast in case error event listener doesn't fire
-           // toast({ title: "خطأ في التشغيل", description: `لم يتمكن من بدء تشغيل الصوت. (${(error as Error).name})`, variant: "destructive" });
+           if (!(error instanceof DOMException && error.name === 'NotSupportedError')) {
+              // Avoid duplicate toast if it's the standard "NotSupportedError" which the handler catches
+              // toast({ title: "خطأ في التشغيل", description: `لم يتمكن من بدء تشغيل الصوت. (${(error as Error).name})`, variant: "destructive" });
+           }
         }
       } else {
-           console.error("Play clicked, but source is not ready or src is empty.");
+           console.error("Play clicked, but source is not ready or src is empty/invalid.");
            setIsAudioLoading(false); // Ensure loading is off if we can't even attempt play
            // Toast should have been shown by prepareAudioSource or selection checks
-           if (!audioRef.current.src && sourceReady) {
+           if (!audioRef.current.src || audioRef.current.src === window.location.href) {
                 toast({ title: "خطأ", description: "لم يتم تحميل مصدر الصوت بشكل صحيح.", variant: "destructive"});
            } else if (!sourceReady) {
                 // prepareAudioSource likely showed a toast already
+                toast({ title: "خطأ", description: "فشل في تحضير مصدر الصوت للتشغيل.", variant: "destructive"});
            }
       }
     }
@@ -514,10 +552,16 @@ export function AppHeader() {
     <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-background px-4 md:px-6 shadow-sm">
       <div className="flex items-center gap-2">
          {/* Sidebar Trigger on Mobile */}
-         {isMobile && <SidebarTrigger />}
+         {isMobile && <SidebarTrigger icon={Menu} />} {/* Use Menu icon for mobile trigger */}
 
-         {/* Selectors moved to the left (start in LTR) for better grouping */}
+         {/* App Title/Logo moved to the left */}
          <div className="hidden md:flex items-center gap-2">
+             {/* Optional Logo */}
+             <span className="font-bold text-lg font-cairo">قارئ الكتاب</span>
+         </div>
+
+         {/* Selectors container */}
+         <div className="flex items-center gap-2 ml-auto md:ml-4"> {/* Adjust margins */}
              {/* Reciter Selector */}
              {isLoadingReciters ? (
                  <Skeleton className="h-10 w-[180px]" />
@@ -530,9 +574,15 @@ export function AppHeader() {
                  <Select value={selectedReciterId} onValueChange={(value) => {
                     console.log("Selected Reciter changed:", value);
                     // Reset moshaf selection first to ensure the effect runs correctly
+                    // Setting moshaf to undefined triggers the useEffect to find the new one
                     setSelectedMoshaf(undefined);
                     setSelectedReciterId(value);
                     setIsAutoplaying(false); // Stop autoplay on manual change
+                    // Pause audio immediately if playing
+                    if (isPlaying && audioRef.current) {
+                       audioRef.current.pause();
+                       setIsPlaying(false); // Update state
+                    }
                  }} dir="rtl">
                      <SelectTrigger className="w-[180px] font-cairo">
                      <SelectValue placeholder="اختر القارئ" />
@@ -552,7 +602,11 @@ export function AppHeader() {
                  console.log("Selected Audio Surah changed:", value);
                  setSelectedAudioSurah(value);
                  setIsAutoplaying(false); // Stop autoplay when manually changing Surah
-                 // No need to pause here, useEffect watching selectedAudioSurah will call prepareAudioSource
+                 // Pause audio immediately if playing
+                 if (isPlaying && audioRef.current) {
+                     audioRef.current.pause();
+                     setIsPlaying(false); // Update state
+                 }
                 }} dir="rtl">
                 <SelectTrigger className="w-[150px] font-cairo">
                   <SelectValue placeholder="اختر سورة" />
