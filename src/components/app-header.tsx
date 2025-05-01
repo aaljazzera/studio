@@ -11,6 +11,7 @@ import {
   BookOpen,
   Menu,
   Loader2,
+  Download, // Import Download icon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -49,8 +50,8 @@ export function AppHeader() {
   const [isAudioLoading, setIsAudioLoading] = useState(false); // Track audio loading state
   const [volume, setVolume] = useState(50);
   const [isMuted, setIsMuted] = useState(false);
-  // Default to Fares Abbad (ID 8) and Al-Fatiha (ID 1)
-  const [selectedReciterId, setSelectedReciterId] = useState<string | undefined>('8');
+  // Default to Fares Abbad (ID 37) and Al-Fatiha (ID 1)
+  const [selectedReciterId, setSelectedReciterId] = useState<string | undefined>('37');
   const [selectedAudioSurah, setSelectedAudioSurah] = useState<string | undefined>('1');
   const [selectedMoshaf, setSelectedMoshaf] = useState<Moshaf | undefined>(undefined); // Store the selected moshaf object
   const [isAutoplaying, setIsAutoplaying] = useState(false); // State to manage autoplay
@@ -580,7 +581,7 @@ export function AppHeader() {
              ) : recitersError ? (
                  <div className="w-[180px] text-destructive text-xs px-2 py-1 border border-destructive rounded-md text-center font-cairo">
                      {/* @ts-ignore */}
-                     {recitersError?.message || 'خطأ في تحميل القراء'}
+                     {(recitersError as Error)?.message || 'خطأ في تحميل القراء'}
                  </div>
              ) : (
                  <Select value={selectedReciterId} onValueChange={(value) => {
@@ -683,7 +684,6 @@ export function AppHeader() {
         {/* Sources Dialog Trigger */}
         <Dialog>
           <DialogTrigger asChild>
-             {/* Simplified: Directly use the button as the trigger */}
              <Button variant="ghost" size="icon" className="font-cairo">
                 <BookOpen className="h-5 w-5" />
                 <span className="sr-only">المصادر والمراجع</span>
@@ -693,23 +693,33 @@ export function AppHeader() {
             <DialogHeader>
               <DialogTitle className="font-cairo text-right">المصادر والمراجع</DialogTitle>
             </DialogHeader>
-            <DialogDescription className="font-cairo text-right space-y-2">
-              <p>
-                مصادر النصوص والروايات القرآنية:
-                <a href="https://qurancomplex.gov.sa/techquran/dev/" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary/80 block">
-                  بوابة المصحف الإلكتروني بمجمع الملك فهد
-                </a>
-              </p>
-              <p>
-                مصدر واجهة برمجة التطبيقات الصوتية للقرآن الكريم:
-                <a href="https://mp3quran.net/api" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary/80 block">
-                  mp3quran.net
-                </a>
-              </p>
-              <p>تم بناء هذا التطبيق باستخدام Next.js و Shadcn/UI و Tailwind CSS.</p>
-              <p>
-                للتواصل والاستفسارات: <a href="mailto:darrati10@gmail.com" className="text-primary underline hover:text-primary/80">darrati10@gmail.com</a>
-              </p>
+            <DialogDescription asChild>
+             <div className="font-cairo text-right space-y-2">
+                <p>
+                    مصادر النصوص القرآنية (الملفات):
+                    <a href="https://qurancomplex.gov.sa/techquran/dev/" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary/80 block">
+                    بوابة المصحف الإلكتروني بمجمع الملك فهد
+                    </a>
+                </p>
+                <p>
+                    مصدر واجهة برمجة التطبيقات الصوتية للقرآن الكريم:
+                    <a href="https://mp3quran.net/" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary/80 block">
+                    mp3quran.net
+                    </a>
+                </p>
+                 <p>
+                    تحميل خطوط القرآن المستخدمة في التطبيق (KFGQPC):
+                    <a href="https://drive.google.com/file/d/1x4JKWT7Sq1F-rZL0cbe38G_10FuD5dQc/view?usp=sharing" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary/80 block">
+                      <Download className="inline-block h-4 w-4 ml-1" />
+                      رابط التحميل (Google Drive)
+                    </a>
+                     <span className="text-xs text-muted-foreground block">(ملاحظة: سيتم فتح الرابط في نافذة جديدة)</span>
+                </p>
+                <p>تم بناء هذا التطبيق باستخدام Next.js و Shadcn/UI و Tailwind CSS.</p>
+                <p>
+                    للتواصل والاستفسارات: <a href="mailto:darrati10@gmail.com" className="text-primary underline hover:text-primary/80">darrati10@gmail.com</a>
+                </p>
+              </div>
             </DialogDescription>
             <DialogClose asChild>
                  <Button type="button" variant="secondary" className="font-cairo mt-4">
