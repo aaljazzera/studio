@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+// Import Cairo font along with Geist
+import { Cairo, Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
@@ -7,6 +8,13 @@ import { SidebarProvider, Sidebar, SidebarTrigger, SidebarInset } from '@/compon
 import { AppSidebar } from '@/components/app-sidebar';
 import { AppHeader } from '@/components/app-header';
 import { QueryProvider } from '@/components/query-provider';
+
+// Configure Cairo font
+const cairo = Cairo({
+  subsets: ['arabic', 'latin'], // Include Arabic subset
+  weight: ['400', '700'], // Include regular (400) and bold (700) if needed
+  variable: '--font-cairo', // Assign CSS variable
+});
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -30,7 +38,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      {/* Add cairo.variable to the body className */}
+      <body className={`${cairo.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}>
         <QueryProvider>
           <ThemeProvider
             attribute="class"

@@ -94,9 +94,11 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-geist-sans);
+    /* Apply Cairo font as the primary font */
+    font-family: var(--font-cairo), var(--font-geist-sans); /* Add Geist Sans as fallback */
   }
   .quran-text {
-    font-family: 'KFGQPC Hafs Uthmanic Script', var(--font-geist-sans);
+    /* Ensure Quran text uses its specific font */
+    font-family: 'KFGQPC Hafs Uthmanic Script', var(--font-cairo), var(--font-geist-sans);
   }
 }
