@@ -26,7 +26,7 @@ export const useQuranStore = create<QuranState>((set) => ({
     set((state) => ({
       fontSize: Math.max(state.fontSize - FONT_STEP, MIN_FONT_SIZE),
     })),
-  viewMode: 'page', // Initial view mode
+  viewMode: 'verse', // Initial view mode set to 'verse'
   toggleViewMode: () =>
     set((state) => ({
       viewMode: state.viewMode === 'page' ? 'verse' : 'page',
@@ -34,3 +34,4 @@ export const useQuranStore = create<QuranState>((set) => ({
   selectedSurah: undefined, // Initially no surah selected
   setSelectedSurah: (surahId) => set({ selectedSurah: surahId }),
 }));
+```

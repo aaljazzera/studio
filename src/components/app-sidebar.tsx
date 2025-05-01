@@ -11,6 +11,7 @@ import {
   Columns,
   Rows,
   PanelLeft,
+  PanelRight // Use PanelRight for RTL toggle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -29,7 +30,7 @@ import {
     SidebarGroupLabel,
     SidebarGroupContent,
     SidebarSeparator,
-    SidebarTrigger,
+    SidebarTrigger, // Keep SidebarTrigger logic
     useSidebar,
 } from '@/components/ui/sidebar';
 import { useQuranStore } from '@/store/quran-store';
@@ -38,13 +39,14 @@ import { Switch } from '@/components/ui/switch';
 
 // Mock data - replace with actual data fetching/state management
 const novels = [
-  { id: 'novel1', name: 'Novel Example 1' },
-  { id: 'novel2', name: 'Novel Example 2' },
+  { id: 'novel1', name: 'رواية مثال 1' },
+  { id: 'novel2', name: 'رواية مثال 2' },
 ];
 
+// Needs proper Arabic Surah names
 const surahs = Array.from({ length: 114 }, (_, i) => ({
   id: `${i + 1}`,
-  name: `Surah ${i + 1}`, // Replace with actual Surah names
+  name: `سورة ${i + 1}`,
 }));
 
 export function AppSidebar() {
@@ -82,21 +84,21 @@ export function AppSidebar() {
   return (
     <>
         <SidebarHeader className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-                 {/* Placeholder for Logo or App Name if needed */}
-                <span className="font-semibold text-lg">Al-Kitab</span>
+            {/* SidebarTrigger goes to the left in RTL */}
+            {!isMobile && <SidebarTrigger icon={PanelRight} />}
+             <div className="flex items-center gap-2">
+                <span className="font-semibold text-lg">الكتاب</span>
             </div>
-            {!isMobile && <SidebarTrigger />}
         </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Reading Controls</SidebarGroupLabel>
+          <SidebarGroupLabel>عناصر التحكم بالقراءة</SidebarGroupLabel>
           <SidebarGroupContent className="space-y-4">
             <div>
-                <Label htmlFor="novel-select" className="text-sm font-medium mb-1 block">Novels</Label>
+                <Label htmlFor="novel-select" className="text-sm font-medium mb-1 block">الروايات</Label>
                 <Select value={selectedNovel} onValueChange={setSelectedNovel} disabled={novels.length === 0}>
                 <SelectTrigger id="novel-select">
-                    <SelectValue placeholder="Select Novel" />
+                    <SelectValue placeholder="اختر رواية" />
                 </SelectTrigger>
                 <SelectContent>
                     {novels.map((novel) => (
@@ -104,21 +106,21 @@ export function AppSidebar() {
                         {novel.name}
                     </SelectItem>
                     ))}
-                     {novels.length === 0 && <SelectItem value="no-novels" disabled>No novels available</SelectItem>}
+                     {novels.length === 0 && <SelectItem value="no-novels" disabled>لا توجد روايات متاحة</SelectItem>}
                 </SelectContent>
                 </Select>
             </div>
 
              <div>
-                <Label htmlFor="surah-select" className="text-sm font-medium mb-1 block">Quran Surahs</Label>
+                <Label htmlFor="surah-select" className="text-sm font-medium mb-1 block">سور القرآن</Label>
                 <Select value={selectedSurah} onValueChange={setSelectedSurah}>
                 <SelectTrigger id="surah-select">
-                    <SelectValue placeholder="Select Surah" />
+                    <SelectValue placeholder="اختر سورة" />
                 </SelectTrigger>
                 <SelectContent>
                     {surahs.map((surah) => (
                     <SelectItem key={surah.id} value={surah.id}>
-                        {surah.name} {/* Replace with actual Surah names */}
+                        {surah.name}
                     </SelectItem>
                     ))}
                 </SelectContent>
@@ -126,46 +128,46 @@ export function AppSidebar() {
             </div>
 
              <div className="flex items-center justify-between">
-               <Label className="text-sm font-medium">Text Size</Label>
                <div className="flex items-center gap-1">
-                 <Button variant="ghost" size="icon" onClick={decreaseFontSize} aria-label="Decrease text size">
-                   <ZoomOut />
-                 </Button>
-                 <span className="text-sm w-6 text-center">{fontSize}</span>
-                 <Button variant="ghost" size="icon" onClick={increaseFontSize} aria-label="Increase text size">
+                 <Button variant="ghost" size="icon" onClick={increaseFontSize} aria-label="تكبير حجم النص">
                    <ZoomIn />
                  </Button>
+                 <span className="text-sm w-6 text-center">{fontSize}</span>
+                 <Button variant="ghost" size="icon" onClick={decreaseFontSize} aria-label="تصغير حجم النص">
+                   <ZoomOut />
+                 </Button>
                </div>
+                <Label className="text-sm font-medium">حجم النص</Label>
              </div>
 
              <div className="flex items-center justify-between">
-               <Label htmlFor="view-mode-toggle" className="text-sm font-medium">
-                 View Mode: {viewMode === 'page' ? 'Page' : 'Verse'}
-               </Label>
                 <Switch
                     id="view-mode-toggle"
                     checked={viewMode === 'verse'}
                     onCheckedChange={toggleViewMode}
-                    aria-label={`Switch to ${viewMode === 'page' ? 'Verse' : 'Page'} view`}
+                    aria-label={`التبديل إلى عرض ${viewMode === 'page' ? 'آية بآية' : 'صفحة'}`}
                 />
+               <Label htmlFor="view-mode-toggle" className="text-sm font-medium">
+                 وضع العرض: {viewMode === 'page' ? 'صفحة' : 'آية بآية'}
+               </Label>
              </div>
 
           </SidebarGroupContent>
         </SidebarGroup>
         <SidebarSeparator />
         <SidebarGroup>
-            <SidebarGroupLabel>Appearance</SidebarGroupLabel>
+            <SidebarGroupLabel>المظهر</SidebarGroupLabel>
              <SidebarGroupContent className="space-y-4">
                  <div className="flex items-center justify-between">
-                    <Label htmlFor="theme-toggle" className="text-sm font-medium">
-                        Theme: {theme === 'dark' ? 'Dark' : 'Light'}
-                    </Label>
-                     <Switch
+                      <Switch
                         id="theme-toggle"
                         checked={theme === 'dark'}
                         onCheckedChange={handleThemeToggle}
-                        aria-label={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} mode`}
+                        aria-label={`التبديل إلى الوضع ${theme === 'dark' ? 'الفاتح' : 'الداكن'}`}
                     />
+                    <Label htmlFor="theme-toggle" className="text-sm font-medium">
+                        السمة: {theme === 'dark' ? 'داكن' : 'فاتح'}
+                    </Label>
                  </div>
              </SidebarGroupContent>
         </SidebarGroup>

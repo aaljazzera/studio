@@ -19,8 +19,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Al-Kitab Reader',
-  description: 'Quran and Novel Reader Application',
+  title: 'قارئ الكتاب',
+  description: 'تطبيق قارئ القرآن والروايات',
 };
 
 export default function RootLayout({
@@ -29,7 +29,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <QueryProvider>
           <ThemeProvider
@@ -39,7 +39,8 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <SidebarProvider defaultOpen={true}>
-              <Sidebar variant="sidebar" collapsible="icon">
+              {/* Set sidebar side to right for Arabic UI */}
+              <Sidebar side="right" variant="sidebar" collapsible="icon">
                 <AppSidebar />
               </Sidebar>
               <SidebarInset>

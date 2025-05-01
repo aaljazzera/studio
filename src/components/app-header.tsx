@@ -39,15 +39,16 @@ import { useSidebar, SidebarTrigger } from '@/components/ui/sidebar';
 
 // Mock data - replace with actual data fetching
 const reciters = [
-  { id: '1', name: 'Mishary Rashid Alafasy' },
-  { id: '2', name: 'Abdul Basit Abdus Samad' },
-  { id: '3', name: 'Saad Al-Ghamdi' },
+  { id: '1', name: 'مشاري راشد العفاسي' },
+  { id: '2', name: 'عبد الباسط عبد الصمد' },
+  { id: '3', name: 'سعد الغامدي' },
 ];
 
+// Needs proper Arabic Surah names
 const audioSurahs = Array.from({ length: 114 }, (_, i) => ({
   id: `${i + 1}`,
-  name: `Surah ${i + 1}`,
-})); // Replace with actual Surah names
+  name: `سورة ${i + 1}`,
+}));
 
 export function AppHeader() {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -62,9 +63,15 @@ export function AppHeader() {
     // Create audio element only on the client side
     audioRef.current = new Audio();
 
+    // Add event listener for when audio ends
+     const handleAudioEnd = () => setIsPlaying(false);
+     audioRef.current.addEventListener('ended', handleAudioEnd);
+
+
     return () => {
-      // Cleanup audio element on unmount
+      // Cleanup audio element and listener on unmount
       if (audioRef.current) {
+        audioRef.current.removeEventListener('ended', handleAudioEnd);
         audioRef.current.pause();
         audioRef.current = null;
       }
@@ -77,19 +84,48 @@ export function AppHeader() {
     }
   }, [volume, isMuted]);
 
+   useEffect(() => {
+     // Update audio source when selections change
+     if (audioRef.current && selectedReciter && selectedAudioSurah) {
+       // In a real app, construct the correct URL
+       // Example: audioRef.current.src = `/audio/${selectedReciter}/${selectedAudioSurah}.mp3`;
+       console.log(`Setting audio source: Reciter ${selectedReciter}, Surah ${selectedAudioSurah}`);
+       // Placeholder: Stop current playback if source changes
+       if (isPlaying) {
+          audioRef.current.pause();
+          setIsPlaying(false);
+       }
+       // Set a dummy source for now, replace with actual path format
+       // audioRef.current.src = `https://example.com/audio/${selectedReciter}/${selectedAudioSurah}.mp3`;
+       audioRef.current.src = ''; // Clear src to avoid unintended playback until play is clicked
+     }
+   }, [selectedReciter, selectedAudioSurah]);
+
+
   const handlePlayPause = () => {
     if (audioRef.current) {
       if (isPlaying) {
         audioRef.current.pause();
       } else {
-        // In a real app, set the src based on selectedReciter and selectedAudioSurah
-        // Example: audioRef.current.src = `/audio/${selectedReciter}/${selectedAudioSurah}.mp3`;
-        if (!audioRef.current.src) {
-          // Set a default/placeholder source if none selected, or show an error
-          console.warn("No audio source selected");
-          return;
+        if (!audioRef.current.src && selectedReciter && selectedAudioSurah) {
+           // Set the src only when play is clicked if not already set
+           // Replace with actual path format
+           // audioRef.current.src = `https://example.com/audio/${selectedReciter}/${selectedAudioSurah}.mp3`;
+           console.warn("Audio source not set, please provide actual audio file paths.");
+           // Set a placeholder src to allow play attempt (will likely fail without real audio)
+           // audioRef.current.src = `https://download.quranicaudio.com/qdc/mishari_al_afasy/murattal/${selectedAudioSurah}.mp3`; // Example - NEEDS CORS or proxy
+           return; // Prevent playing without a valid source
+        } else if (!selectedReciter || !selectedAudioSurah) {
+             console.warn("الرجاء اختيار القارئ والسورة الصوتية");
+             return;
         }
-        audioRef.current.play().catch(error => console.error("Audio playback error:", error));
+
+        audioRef.current.play().then(() => {
+          // Playback started successfully
+        }).catch(error => {
+          console.error("خطأ في تشغيل الصوت:", error);
+          setIsPlaying(false); // Reset state if playback fails
+        });
       }
       setIsPlaying(!isPlaying);
     }
@@ -107,81 +143,50 @@ export function AppHeader() {
   };
 
   // Placeholder functions for window controls (not functional in browser)
-  const handleMinimize = () => console.log("Minimize");
-  const handleMaximize = () => console.log("Maximize/Restore");
-  const handleClose = () => console.log("Close");
+  const handleMinimize = () => console.log("تصغير");
+  const handleMaximize = () => console.log("تكبير/استعادة");
+  const handleClose = () => console.log("إغلاق");
 
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-background px-4 md:px-6 shadow-sm">
       <div className="flex items-center gap-2">
-         {/* Only show SidebarTrigger if needed (e.g., on mobile or specific layouts) */}
-         {isMobile && <SidebarTrigger />}
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={handlePlayPause} disabled={!selectedReciter || !selectedAudioSurah}>
-                {isPlaying ? <Pause /> : <Play />}
-                <span className="sr-only">{isPlaying ? 'Pause' : 'Play'}</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{isPlaying ? 'Pause' : 'Play'} Audio</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-
-        <div className="flex items-center gap-2 w-32">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" onClick={toggleMute}>
-                  {isMuted || volume === 0 ? <VolumeX /> : <Volume2 />}
-                  <span className="sr-only">{isMuted ? 'Unmute' : 'Mute'}</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{isMuted ? 'Unmute' : 'Mute'}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <Slider
-            value={[volume]}
-            max={100}
-            step={1}
-            onValueChange={handleVolumeChange}
-            className="w-full"
-            aria-label="Volume control"
-            disabled={isMuted}
-          />
+         {/* Window Controls (Right side for RTL) - Non-functional placeholders */}
+        <div className="flex items-center gap-1">
+            <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" onClick={handleClose} className="hover:bg-destructive/80 hover:text-destructive-foreground">
+                        <X className="h-4 w-4" />
+                        <span className="sr-only">إغلاق</span>
+                    </Button>
+                    </TooltipTrigger>
+                    <TooltipContent><p>إغلاق</p></TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" onClick={handleMaximize} className="hover:bg-muted">
+                        <Maximize2 className="h-4 w-4" />
+                        <span className="sr-only">تكبير</span>
+                    </Button>
+                    </TooltipTrigger>
+                    <TooltipContent><p>تكبير</p></TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" onClick={handleMinimize} className="hover:bg-muted">
+                        <Minimize2 className="h-4 w-4" />
+                        <span className="sr-only">تصغير</span>
+                    </Button>
+                    </TooltipTrigger>
+                    <TooltipContent><p>تصغير</p></TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
         </div>
 
-        <div className="hidden md:flex items-center gap-2">
-          <Select value={selectedReciter} onValueChange={setSelectedReciter}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Select Reciter" />
-            </SelectTrigger>
-            <SelectContent>
-              {reciters.map((reciter) => (
-                <SelectItem key={reciter.id} value={reciter.id}>
-                  {reciter.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      </div>
 
-          <Select value={selectedAudioSurah} onValueChange={setSelectedAudioSurah}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Select Audio Surah" />
-            </SelectTrigger>
-            <SelectContent>
-              {audioSurahs.map((surah) => (
-                <SelectItem key={surah.id} value={surah.id}>
-                  {surah.name} {/* Replace with actual Surah names */}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      {/* Audio Controls and Selectors (Left side for RTL) */}
+       <div className="flex items-center gap-2">
 
         <Dialog>
           <DialogTrigger asChild>
@@ -190,59 +195,99 @@ export function AppHeader() {
                 <TooltipTrigger asChild>
                   <Button variant="ghost" size="icon">
                     <BookOpen />
-                    <span className="sr-only">Sources and References</span>
+                    <span className="sr-only">المصادر والمراجع</span>
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Sources and References</p>
+                  <p>المصادر والمراجع</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Sources and References</DialogTitle>
+              <DialogTitle>المصادر والمراجع</DialogTitle>
             </DialogHeader>
             <DialogDescription>
-              This section will contain information about the sources and references used in the application. (Content to be added)
+              سيحتوي هذا القسم على معلومات حول المصادر والمراجع المستخدمة في التطبيق. (سيتم إضافة المحتوى لاحقاً)
             </DialogDescription>
             {/* Add sources content here */}
           </DialogContent>
         </Dialog>
-      </div>
 
-      {/* Window Controls - Non-functional placeholders */}
-      <div className="flex items-center gap-1">
+         <div className="hidden md:flex items-center gap-2">
+            <Select value={selectedAudioSurah} onValueChange={setSelectedAudioSurah}>
+                <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="اختر سورة صوتية" />
+                </SelectTrigger>
+                <SelectContent>
+                {audioSurahs.map((surah) => (
+                    <SelectItem key={surah.id} value={surah.id}>
+                    {surah.name}
+                    </SelectItem>
+                ))}
+                </SelectContent>
+            </Select>
+
+             <Select value={selectedReciter} onValueChange={setSelectedReciter}>
+                 <SelectTrigger className="w-[180px]">
+                 <SelectValue placeholder="اختر القارئ" />
+                 </SelectTrigger>
+                 <SelectContent>
+                 {reciters.map((reciter) => (
+                     <SelectItem key={reciter.id} value={reciter.id}>
+                     {reciter.name}
+                     </SelectItem>
+                 ))}
+                 </SelectContent>
+             </Select>
+        </div>
+
+
+        <div className="flex items-center gap-2 w-32">
+          <Slider
+            dir="rtl" // Set direction for slider
+            value={[volume]}
+            max={100}
+            step={1}
+            onValueChange={handleVolumeChange}
+            className="w-full"
+            aria-label="التحكم في مستوى الصوت"
+            disabled={isMuted}
+          />
+           <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" onClick={toggleMute}>
+                  {isMuted || volume === 0 ? <VolumeX /> : <Volume2 />}
+                  <span className="sr-only">{isMuted ? 'إلغاء الكتم' : 'كتم الصوت'}</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{isMuted ? 'إلغاء الكتم' : 'كتم الصوت'}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+
          <TooltipProvider>
-            <Tooltip>
-                <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" onClick={handleMinimize} className="hover:bg-muted">
-                    <Minimize2 className="h-4 w-4" />
-                    <span className="sr-only">Minimize</span>
-                </Button>
-                </TooltipTrigger>
-                <TooltipContent><p>Minimize</p></TooltipContent>
-            </Tooltip>
-            <Tooltip>
-                <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" onClick={handleMaximize} className="hover:bg-muted">
-                    <Maximize2 className="h-4 w-4" />
-                    <span className="sr-only">Maximize</span>
-                </Button>
-                </TooltipTrigger>
-                <TooltipContent><p>Maximize</p></TooltipContent>
-            </Tooltip>
-            <Tooltip>
-                <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" onClick={handleClose} className="hover:bg-destructive/80 hover:text-destructive-foreground">
-                    <X className="h-4 w-4" />
-                    <span className="sr-only">Close</span>
-                </Button>
-                </TooltipTrigger>
-                 <TooltipContent><p>Close</p></TooltipContent>
-            </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" onClick={handlePlayPause} disabled={!selectedReciter || !selectedAudioSurah}>
+                {isPlaying ? <Pause /> : <Play />}
+                <span className="sr-only">{isPlaying ? 'إيقاف مؤقت' : 'تشغيل'}</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{isPlaying ? 'إيقاف مؤقت' : 'تشغيل'} الصوت</p>
+            </TooltipContent>
+          </Tooltip>
         </TooltipProvider>
-      </div>
+
+         {/* Only show SidebarTrigger if needed (e.g., on mobile or specific layouts) */}
+         {isMobile && <SidebarTrigger />}
+       </div>
+
     </header>
   );
 }
