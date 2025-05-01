@@ -39,11 +39,11 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { quranSurahs } from '@/data/quran-surahs'; // Import surah data
 
-// Mock data - replace with actual data fetching/state management for novels if needed
-const novels = [
-  { id: 'novel1', name: 'رواية مثال 1' },
-  { id: 'novel2', name: 'رواية مثال 2' },
-];
+// // Mock data - replace with actual data fetching/state management for novels if needed
+// const novels = [
+//   { id: 'novel1', name: 'رواية مثال 1' },
+//   { id: 'novel2', name: 'رواية مثال 2' },
+// ];
 
 
 export function AppSidebar() {
@@ -61,7 +61,7 @@ export function AppSidebar() {
     selectedSurah,   // For displaying Quran text
   } = useQuranStore();
 
-  const [selectedNovel, setSelectedNovel] = useState<string | undefined>(undefined);
+  // const [selectedNovel, setSelectedNovel] = useState<string | undefined>(undefined);
 
 
   useEffect(() => {
@@ -84,41 +84,36 @@ export function AppSidebar() {
              {!isMobile && <SidebarTrigger icon={PanelRight} />}
              <div className="flex items-center gap-2">
                 {/* Use appropriate icon if needed */}
-                <span className="font-semibold text-lg">الكتاب</span>
+                <span className="font-semibold text-lg font-cairo">الكتاب</span>
             </div>
         </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>التحكم بالنص</SidebarGroupLabel>
           <SidebarGroupContent className="space-y-4">
-             {/* Novel Selection - Keep if novels feature is separate */}
-            <div>
-                <Label htmlFor="novel-select" className="text-sm font-medium mb-1 block">الروايات</Label>
-                <Select value={selectedNovel} onValueChange={setSelectedNovel} disabled={novels.length === 0} dir="rtl">
+             {/* Novel Selection - Disabled for now */}
+            {/* <div>
+                <Label htmlFor="novel-select" className="text-sm font-medium mb-1 block font-cairo">الروايات (غير مفعّل)</Label>
+                <Select value={selectedNovel} onValueChange={setSelectedNovel} disabled={true} dir="rtl">
                 <SelectTrigger id="novel-select">
                     <SelectValue placeholder="اختر رواية" />
                 </SelectTrigger>
                 <SelectContent>
-                    {novels.map((novel) => (
-                    <SelectItem key={novel.id} value={novel.id}>
-                        {novel.name}
-                    </SelectItem>
-                    ))}
-                     {novels.length === 0 && <SelectItem value="no-novels" disabled>لا توجد روايات متاحة</SelectItem>}
+                     <SelectItem value="no-novels" disabled>غير متاح حاليًا</SelectItem>
                 </SelectContent>
                 </Select>
-            </div>
+            </div> */}
 
              {/* Quran Surah Selection for Text Display */}
              <div>
-                <Label htmlFor="surah-select-text" className="text-sm font-medium mb-1 block">عرض سورة (النص)</Label>
+                <Label htmlFor="surah-select-text" className="text-sm font-medium mb-1 block font-cairo">عرض سورة (النص)</Label>
                 <Select value={selectedSurah} onValueChange={setSelectedSurah} dir="rtl">
-                <SelectTrigger id="surah-select-text">
+                <SelectTrigger id="surah-select-text" className="font-cairo">
                     <SelectValue placeholder="اختر سورة لعرضها" />
                 </SelectTrigger>
                 <SelectContent>
                     {quranSurahs.map((surah) => (
-                    <SelectItem key={surah.id} value={surah.id.toString()}>
+                    <SelectItem key={surah.id} value={surah.id.toString()} className="font-cairo">
                         {surah.id}. {surah.name}
                     </SelectItem>
                     ))}
@@ -137,7 +132,7 @@ export function AppSidebar() {
                    <ZoomOut />
                  </Button>
                </div>
-                <Label className="text-sm font-medium">حجم النص</Label>
+                <Label className="text-sm font-medium font-cairo">حجم النص</Label>
              </div>
 
              {/* View Mode Toggle */}
@@ -148,8 +143,8 @@ export function AppSidebar() {
                     onCheckedChange={toggleViewMode}
                     aria-label={`التبديل إلى عرض ${viewMode === 'page' ? 'آية بآية' : 'صفحة'}`}
                 />
-               <Label htmlFor="view-mode-toggle" className="text-sm font-medium">
-                 وضع العرض: {viewMode === 'page' ? 'صفحة' : 'صفحة'} {/* Adjusted label for clarity */}
+               <Label htmlFor="view-mode-toggle" className="text-sm font-medium font-cairo">
+                 وضع العرض: {viewMode === 'page' ? 'صفحة' : 'آية بآية'}
                </Label>
              </div>
 
@@ -167,7 +162,7 @@ export function AppSidebar() {
                         onCheckedChange={handleThemeToggle}
                         aria-label={`التبديل إلى الوضع ${theme === 'dark' ? 'الفاتح' : 'الداكن'}`}
                     />
-                    <Label htmlFor="theme-toggle" className="text-sm font-medium">
+                    <Label htmlFor="theme-toggle" className="text-sm font-medium font-cairo">
                         السمة: {theme === 'dark' ? 'داكن' : 'فاتح'}
                     </Label>
                  </div>
