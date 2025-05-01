@@ -497,7 +497,7 @@ export function AppHeader() {
         console.log("Source ready. Attempting play...");
          setIsAudioLoading(true); // Set loading visually, 'playing' or 'error' event will clear it
         try {
-           console.log("Calling audio.play()...");
+           console.log("Audio is paused, calling play()...");
           await audioRef.current.play();
           console.log("play() promise resolved.");
           // 'playing' event listener should set isPlaying = true and isAudioLoading = false
@@ -701,10 +701,22 @@ export function AppHeader() {
               <DialogTitle className="font-cairo text-right">المصادر والمراجع</DialogTitle>
             </DialogHeader>
             <DialogDescription className="font-cairo text-right space-y-2">
-              <p> مصدر واجهة برمجة التطبيقات الصوتية للقرآن الكريم: <a href="https://mp3quran.net/api" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary/80">mp3quran.net</a> </p>
-               <p>مصدر بيانات السور والقراء مأخوذ من واجهة برمجة التطبيقات المذكورة أعلاه.</p>
-               <p>نصوص القرآن المستخدمة للعرض مأخوذة من ملفات نصية محلية.</p>
-               <p>تم بناء هذا التطبيق باستخدام Next.js و Shadcn/UI و Tailwind CSS.</p>
+              <p>
+                مصادر النصوص والروايات القرآنية:
+                <a href="https://qurancomplex.gov.sa/techquran/dev/" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary/80 block">
+                  بوابة المصحف الإلكتروني بمجمع الملك فهد
+                </a>
+              </p>
+              <p>
+                مصدر واجهة برمجة التطبيقات الصوتية للقرآن الكريم:
+                <a href="https://mp3quran.net/api" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary/80 block">
+                  mp3quran.net
+                </a>
+              </p>
+              <p>تم بناء هذا التطبيق باستخدام Next.js و Shadcn/UI و Tailwind CSS.</p>
+              <p>
+                للتواصل والاستفسارات: <a href="mailto:darrati10@gmail.com" className="text-primary underline hover:text-primary/80">darrati10@gmail.com</a>
+              </p>
             </DialogDescription>
             <DialogClose asChild>
                  <Button type="button" variant="secondary" className="font-cairo mt-4">
@@ -718,3 +730,5 @@ export function AppHeader() {
     </header>
   );
 }
+
+    
