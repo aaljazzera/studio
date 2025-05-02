@@ -39,45 +39,63 @@
 @layer base {
   :root {
     /* Light Theme based on image: #F9F4DA, #3C3633, #A59D85 */
-    --background: 50 73% 92%; /* #F9F4DA - Light yellowish-beige */
+    /* Using colors from the new image provided for sidebar */
+     /* Background: Light green similar to image #D9EAD3 */
+    /* Controls: Light beige/cream similar to image #FDF8E1 */
+    /* Text/Labels: Darker brownish-gray similar to image #3C3633 */
+
+    --background: 98 31% 87%; /* #D9EAD3 - Light Green */
     --foreground: 24 8% 22%; /* #3C3633 - Dark brownish-gray */
-    --card: 50 56% 88%; /* #F5EDCE - Slightly darker beige */
-    --card-foreground: 24 8% 22%; /* #3C3633 */
-    --popover: 50 73% 92%; /* #F9F4DA - Background */
-    --popover-foreground: 24 8% 22%; /* #3C3633 */
-    --primary: 45 13% 58%; /* #A59D85 - Khaki */
-    --primary-foreground: 24 8% 22%; /* #3C3633 - Dark Text */
-    --secondary: 50 56% 88%; /* #F5EDCE - Card */
-    --secondary-foreground: 24 8% 22%; /* #3C3633 */
-    --muted: 40 31% 85%; /* #E4DBCB - Border color */
-    --muted-foreground: 24 8% 40%; /* Slightly lighter gray */
-    --accent: 50 56% 88%; /* #F5EDCE - Card/secondary for hover */
-    --accent-foreground: 24 8% 22%; /* #3C3633 */
-    --destructive: 0 84.2% 60.2%; /* Default destructive */
-    --destructive-foreground: 0 0% 98%; /* Default destructive foreground */
-    --border: 40 31% 85%; /* #E4DBCB */
-    --input: 50 56% 88%; /* #F5EDCE */
-    --ring: 45 13% 58%; /* #A59D85 - Khaki */
-    --chart-1: 12 76% 61%;
-    --chart-2: 45 13% 58%; /* Primary */
-    --chart-3: 24 8% 22%; /* Foreground */
-    --chart-4: 45 13% 58%; /* Accent */
-    --chart-5: 27 87% 67%;
+
+    --card: 50 73% 92%; /* Keep original beige for main content card */
+    --card-foreground: 24 8% 22%;
+
+    --popover: 50 73% 92%; /* Original beige */
+    --popover-foreground: 24 8% 22%;
+
+    --primary: 45 13% 58%; /* Original Khaki - Might not be used much now */
+    --primary-foreground: 24 8% 22%;
+
+    --secondary: 50 73% 92%; /* Original beige - used for input background now */
+    --secondary-foreground: 24 8% 22%;
+
+    --muted: 98 20% 80%; /* Lighter green for muted */
+    --muted-foreground: 24 8% 40%;
+
+    --accent: 50 73% 90%; /* Slightly darker beige for hover */
+    --accent-foreground: 24 8% 22%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 98 20% 75%; /* Greenish border */
+    --input: 50 85% 94%; /* #FDF8E1 - Light Beige/Cream */
+    --ring: 45 13% 58%; /* Original Khaki */
+
     --radius: 0.5rem;
 
-    /* Sidebar Light Theme (Based on light theme colors) */
-    --sidebar-background: 50 56% 88%; /* #F5EDCE - Light Khaki/Beige */
+
+    /* Sidebar Light Theme (Based on new image) */
+    --sidebar-background: 98 31% 87%; /* #D9EAD3 - Light Green */
     --sidebar-foreground: 24 8% 22%; /* #3C3633 - Dark Text */
-    --sidebar-primary: 45 13% 58%; /* #A59D85 - Khaki */
+
+    /* Colors for controls (buttons, selects) inside sidebar */
+    --sidebar-primary: 50 85% 94%; /* #FDF8E1 - Light Beige/Cream */
     --sidebar-primary-foreground: 24 8% 22%; /* #3C3633 - Dark Text */
-    --sidebar-accent: 50 73% 92%; /* #F9F4DA - Main background for hover */
-    --sidebar-accent-foreground: 24 8% 22%; /* #3C3633 - Dark Text */
-    --sidebar-border: 40 31% 85%; /* #E4DBCB - Main border */
-    --sidebar-ring: 45 13% 58%; /* #A59D85 - Khaki */
+
+    --sidebar-secondary: 50 85% 94%; /* Same as primary for consistency */
+    --sidebar-secondary-foreground: 24 8% 22%;
+
+    --sidebar-accent: 50 73% 90%; /* Slightly darker beige for hover */
+    --sidebar-accent-foreground: 24 8% 22%; /* Dark Text */
+
+    --sidebar-border: 98 20% 75%; /* Greenish border, subtle */
+    --sidebar-ring: 45 13% 58%; /* Original Khaki */
+    --sidebar-input: 50 85% 94%; /* #FDF8E1 - Light Beige/Cream */
   }
 
   .dark {
-    /* Dark Theme based on image: #303124, #E4E4D4, #6C695E */
+    /* Dark Theme based on image: #303124, #E4E4D4, #6C695E (Keeping original dark theme for now) */
     --background: 65 15% 17%; /* #303124 - Dark Olive Green/Gray */
     --foreground: 60 17% 86%; /* #E4E4D4 - Light Beige/Gray */
     --card: 60 9% 20%; /* #383832 - Slightly Lighter Dark */
@@ -97,13 +115,8 @@
     --border: 50 7% 35%; /* #625F55 */
     --input: 60 9% 20%; /* #383832 */
     --ring: 50 7% 40%; /* #6C695E - Muted Olive/Khaki */
-    --chart-1: 220 70% 50%;
-    --chart-2: 50 7% 40%; /* Primary */
-    --chart-3: 30 80% 55%;
-    --chart-4: 50 7% 40%; /* Accent */
-    --chart-5: 340 75% 55%;
 
-    /* Sidebar Dark Theme (Based on dark theme colors) */
+    /* Sidebar Dark Theme (Can be adjusted later if needed) */
     --sidebar-background: 60 9% 20%; /* #383832 - Dark Olive/Gray */
     --sidebar-foreground: 60 17% 86%; /* #E4E4D4 - Light Text */
     --sidebar-primary: 50 7% 40%; /* #6C695E - Muted Olive/Khaki */
@@ -112,6 +125,9 @@
     --sidebar-accent-foreground: 60 17% 86%; /* #E4E4D4 - Light Text */
     --sidebar-border: 50 7% 35%; /* #625F55 - Main border */
     --sidebar-ring: 50 7% 40%; /* #6C695E - Muted Olive/Khaki */
+     --sidebar-input: 60 9% 20%; /* #383832 */
+     --sidebar-secondary: 60 9% 20%;
+     --sidebar-secondary-foreground: 60 17% 86%;
   }
 }
 
@@ -122,36 +138,17 @@
   body {
     @apply bg-background text-foreground;
     /* Apply Cairo font as the primary UI font, falling back to system sans-serif */
-    font-family: var(--font-cairo), var(--font-geist-sans); /* Add Geist Sans as fallback */
+    font-family: var(--font-cairo), var(--font-geist-sans);
   }
 
-  /* Explicitly apply Cairo font to common UI elements */
-  .font-cairo,
-  button,
-  [role="combobox"], /* SelectTrigger */
-  [role="listbox"] *, /* SelectContent items */
-  [role="menu"] *, /* DropdownMenu items */
-  [role="dialog"] *, /* Dialog content */
-  [role="tooltip"], /* Tooltip content */
-  label,
-  input, /* Apply to input placeholders too */
-  textarea,
-  legend /* SidebarGroupLabel */
-  {
-     font-family: var(--font-cairo), var(--font-geist-sans);
-   }
-
-
-  /* Style dialog content specifically */
-  [role="dialog"] > *,
-  [role="alertdialog"] > * {
+  /* Apply Cairo font explicitly */
+  .font-cairo, button, input, select, textarea, label, legend, [role="combobox"], [role="listbox"] *, [role="menu"] *, [role="dialog"] *, [role="tooltip"] {
     font-family: var(--font-cairo), var(--font-geist-sans);
   }
 
   /* Default Quran text font (Hafs) */
   .quran-text {
     font-family: 'KFGQPC Hafs Uthmanic Script', var(--font-cairo), var(--font-geist-sans), sans-serif;
-    /* Add specific styles for Quran text, e.g., line height, word spacing if needed */
     line-height: 2.5; /* Example: Increase line height for readability */
     text-align: center; /* Center align Quran text */
   }
@@ -170,12 +167,49 @@
   }
 }
 
+
+/* Custom styles for sidebar components */
 @layer components {
- /* Add specific component styles using @apply if needed */
+    /* Apply sidebar-specific colors to buttons and selects within the sidebar */
+    [data-sidebar="sidebar"] button,
+    [data-sidebar="sidebar"] [role="combobox"] { /* SelectTrigger */
+        @apply bg-sidebar-primary text-sidebar-primary-foreground border-sidebar-border;
+        @apply hover:bg-sidebar-accent hover:text-sidebar-accent-foreground;
+         /* Ensure consistent font */
+        font-family: var(--font-cairo), var(--font-geist-sans);
+    }
+
+     /* Style for SelectContent items within sidebar */
+    .sidebar-select-content {
+        @apply bg-sidebar-primary text-sidebar-primary-foreground border-sidebar-border;
+         /* Ensure consistent font */
+        font-family: var(--font-cairo), var(--font-geist-sans);
+    }
+    .sidebar-select-content [role="option"] { /* SelectItem */
+         @apply hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus:bg-sidebar-accent focus:text-sidebar-accent-foreground;
+          /* Ensure consistent font */
+         font-family: var(--font-cairo), var(--font-geist-sans);
+    }
+
+     /* Style for Labels within sidebar */
+    [data-sidebar="sidebar"] label,
+    [data-sidebar="sidebar"] legend { /* SidebarGroupLabel */
+        @apply text-sidebar-foreground;
+        /* Ensure consistent font */
+        font-family: var(--font-cairo), var(--font-geist-sans);
+    }
+
+     /* Style for the text span next to font size buttons */
+     [data-sidebar="sidebar"] .font-size-display {
+        @apply text-sidebar-foreground;
+        /* Ensure consistent font */
+        font-family: var(--font-cairo), var(--font-geist-sans);
+     }
 }
+
 
 @layer utilities {
  /* Add custom utility classes if needed */
 }
 
-
+    

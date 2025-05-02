@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -75,7 +76,17 @@ const SidebarProvider = React.forwardRef<
 
     // This is the internal state of the sidebar.
     // We use openProp and setOpenProp for control from outside the component.
-    const [_open, _setOpen] = React.useState(defaultOpen)
+    const [_open, _setOpen] = React.useState(() => {
+      // Check cookie for initial state on client-side
+      if (typeof window !== 'undefined') {
+        const cookieValue = document.cookie
+          .split('; ')
+          .find((row) => row.startsWith(`${SIDEBAR_COOKIE_NAME}=`))
+          ?.split('=')[1];
+        return cookieValue ? cookieValue === 'true' : defaultOpen;
+      }
+      return defaultOpen;
+    });
     const open = openProp ?? _open
     const setOpen = React.useCallback(
       (value: boolean | ((value: boolean) => boolean)) => {
@@ -203,7 +214,7 @@ const Sidebar = React.forwardRef<
       return (
         <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
           <SheetContent
-            data-sidebar="sidebar"
+            data-sidebar="sidebar" // Add data attribute here
             data-mobile="true"
             className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden" // Hide default close button
             style={
@@ -374,7 +385,7 @@ const SidebarInput = React.forwardRef<
       ref={ref}
       data-sidebar="input"
       className={cn(
-        "h-8 w-full bg-background shadow-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
+        "h-8 w-full bg-sidebar-input shadow-none focus-visible:ring-2 focus-visible:ring-sidebar-ring text-sidebar-foreground", // Use sidebar input colors
         "group-data-[collapsible=icon]:hidden", // Hide input when collapsed to icon mode
         className
       )}
@@ -551,8 +562,9 @@ const sidebarMenuButtonVariants = cva(
   {
     variants: {
       variant: {
-        default: "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-        outline:
+        // Use sidebar colors for default variant
+        default: "bg-sidebar-secondary text-sidebar-secondary-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+        outline: // Keep outline variant as is, or adjust using sidebar variables if needed
           "bg-background shadow-[0_0_0_1px_hsl(var(--sidebar-border))] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-[0_0_0_1px_hsl(var(--sidebar-accent))]",
       },
       size: {
@@ -815,3 +827,5 @@ export {
   SidebarTrigger,
   useSidebar,
 }
+
+    
