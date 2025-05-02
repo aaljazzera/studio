@@ -125,6 +125,7 @@
 
   /* Explicitly apply Cairo font to common UI elements */
   /* This ensures UI elements use Cairo unless specifically overridden */
+  .font-cairo,
   button,
   [role="combobox"], /* Shadcn SelectTrigger */
   [role="listbox"] *, /* Shadcn SelectContent items */
@@ -178,3 +179,4 @@
 @layer utilities {
  /* Add custom utility classes if needed */
 }
+
