@@ -126,7 +126,7 @@ export function AppHeader() {
 
       if (error) { // Check if error object exists
         console.error(`MediaError code: ${error.code}, message: ${error.message || 'N/A'}`);
-        switch (error.code) { // Use error.code directly
+        switch (error?.code) { // Use error.code directly
           case MediaError.MEDIA_ERR_ABORTED:
             errorMessage = hasUserInteracted.current ? 'تم إجهاض عملية جلب الصوت.' : ''; // Only show if user intended play
             break; // Added break statement
@@ -514,19 +514,19 @@ export function AppHeader() {
           {isLoadingReciters ? (
             <Skeleton className="h-10 w-[180px]" />
           ) : recitersError ? (
-            <div className="w-[180px] text-destructive text-xs px-2 py-1 border border-destructive rounded-md text-center font-cairo">
+            <div className="w-[180px] text-destructive text-xs px-2 py-1 border border-destructive rounded-md text-center">
               {(recitersError as Error)?.message || 'خطأ في تحميل القراء'}
             </div>
           ) : (
              // Ensure Select components rerender if recitersData changes by using a key or checking data length
             recitersData?.reciters?.length > 0 ? (
               <Select value={selectedReciterId} onValueChange={handleReciterChange} dir="rtl">
-                <SelectTrigger className="w-[180px] font-cairo">
+                <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="اختر القارئ" />
                 </SelectTrigger>
                 <SelectContent>
                   {recitersData.reciters.map((reciter) => (
-                    <SelectItem key={reciter.id} value={reciter.id.toString()} className="font-cairo">
+                    <SelectItem key={reciter.id} value={reciter.id.toString()}>
                       {reciter.name}
                     </SelectItem>
                   ))}
@@ -538,12 +538,12 @@ export function AppHeader() {
           )}
 
           <Select value={selectedAudioSurah} onValueChange={handleSurahChange} dir="rtl">
-            <SelectTrigger className="w-[150px] font-cairo">
+            <SelectTrigger className="w-[150px]">
               <SelectValue placeholder="اختر سورة" />
             </SelectTrigger>
             <SelectContent>
               {quranSurahs.map((surah) => (
-                <SelectItem key={surah.id} value={surah.id.toString()} className="font-cairo">
+                <SelectItem key={surah.id} value={surah.id.toString()}>
                   {surah.id}. {surah.name}
                 </SelectItem>
               ))}
@@ -556,14 +556,14 @@ export function AppHeader() {
           <Tooltip>
             <TooltipTrigger asChild>
                {/* Use isPlaying state to determine icon */}
-               <Button variant="ghost" size="icon" onClick={handlePlayPause} disabled={isPlayDisabled} className="font-cairo">
+               <Button variant="ghost" size="icon" onClick={handlePlayPause} disabled={isPlayDisabled}>
                  {isAudioLoading ? <Loader2 className="animate-spin h-5 w-5" /> : isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
                  <span className="sr-only">{isPlaying ? 'إيقاف مؤقت' : 'تشغيل'}</span>
                </Button>
             </TooltipTrigger>
             <TooltipContent>
               {/* Use isPlaying state for tooltip text */}
-              <p className="font-cairo">{isPlayDisabled ? 'يرجى تحديد القارئ والسورة' : (isAudioLoading ? 'جاري التحميل...' : (isPlaying ? 'إيقاف مؤقت' : 'تشغيل'))}</p>
+              <p>{isPlayDisabled ? 'يرجى تحديد القارئ والسورة' : (isAudioLoading ? 'جاري التحميل...' : (isPlaying ? 'إيقاف مؤقت' : 'تشغيل'))}</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -582,13 +582,13 @@ export function AppHeader() {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" onClick={toggleMute} className="font-cairo">
+                <Button variant="ghost" size="icon" onClick={toggleMute}>
                   {isMuted || volume === 0 ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
                   <span className="sr-only">{isMuted ? 'إلغاء الكتم' : 'كتم الصوت'}</span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p className="font-cairo">{isMuted ? 'إلغاء الكتم' : 'كتم الصوت'}</p>
+                <p>{isMuted ? 'إلغاء الكتم' : 'كتم الصوت'}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -597,14 +597,14 @@ export function AppHeader() {
         {/* Sources and References Dialog */}
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="ghost" size="icon" className="font-cairo">
+            <Button variant="ghost" size="icon">
               <BookOpen className="h-5 w-5" />
               <span className="sr-only">المصادر والمراجع</span>
             </Button>
           </DialogTrigger>
-          <DialogContent dir="rtl" className="font-cairo sm:max-w-[525px]">
+          <DialogContent dir="rtl" className="sm:max-w-[525px]">
             <DialogHeader>
-              <DialogTitle className="font-cairo text-right text-xl mb-4">المصادر والمراجع</DialogTitle>
+              <DialogTitle className="text-right text-xl mb-4">المصادر والمراجع</DialogTitle>
             </DialogHeader>
              <DialogDescription asChild>
                <div className="space-y-5 text-right pr-2">
@@ -641,7 +641,7 @@ export function AppHeader() {
              </DialogDescription>
             <DialogFooter className="mt-6">
               <DialogClose asChild>
-                <Button type="button" variant="secondary" className="font-cairo">
+                <Button type="button" variant="secondary">
                   إغلاق
                 </Button>
               </DialogClose>

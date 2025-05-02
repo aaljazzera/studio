@@ -93,7 +93,7 @@ export function AppSidebar() {
           <SidebarGroupContent className="space-y-4">
              {/* Novel Selection - Disabled for now */}
             {/* <div>
-                <Label htmlFor="novel-select" className="text-sm font-medium mb-1 block font-cairo">الروايات (غير مفعّل)</Label>
+                <Label htmlFor="novel-select" className="text-sm font-medium mb-1 block">الروايات (غير مفعّل)</Label>
                 <Select value={selectedNovel} onValueChange={setSelectedNovel} disabled={true} dir="rtl">
                 <SelectTrigger id="novel-select">
                     <SelectValue placeholder="اختر رواية" />
@@ -106,14 +106,14 @@ export function AppSidebar() {
 
              {/* Quran Riwaya Selection for Text Display */}
              <div>
-                <Label htmlFor="riwaya-select-text" className="text-sm font-medium mb-1 block font-cairo">الرواية (النص)</Label>
+                <Label htmlFor="riwaya-select-text" className="text-sm font-medium mb-1 block">الرواية (النص)</Label>
                 <Select value={selectedRiwaya} onValueChange={setSelectedRiwaya} dir="rtl">
-                <SelectTrigger id="riwaya-select-text" className="font-cairo">
+                <SelectTrigger id="riwaya-select-text">
                     <SelectValue placeholder="اختر الرواية" />
                 </SelectTrigger>
                 <SelectContent>
                     {quranRiwayat.map((riwaya) => (
-                    <SelectItem key={riwaya.id} value={riwaya.id} className="font-cairo">
+                    <SelectItem key={riwaya.id} value={riwaya.id}>
                         {riwaya.name}
                     </SelectItem>
                     ))}
@@ -124,14 +124,14 @@ export function AppSidebar() {
 
              {/* Quran Surah Selection for Text Display */}
              <div>
-                <Label htmlFor="surah-select-text" className="text-sm font-medium mb-1 block font-cairo">عرض سورة (النص)</Label>
+                <Label htmlFor="surah-select-text" className="text-sm font-medium mb-1 block">عرض سورة (النص)</Label>
                 <Select value={selectedSurah} onValueChange={setSelectedSurah} dir="rtl">
-                <SelectTrigger id="surah-select-text" className="font-cairo">
+                <SelectTrigger id="surah-select-text">
                     <SelectValue placeholder="اختر سورة لعرضها" />
                 </SelectTrigger>
                 <SelectContent>
                     {quranSurahs.map((surah) => (
-                    <SelectItem key={surah.id} value={surah.id.toString()} className="font-cairo">
+                    <SelectItem key={surah.id} value={surah.id.toString()}>
                         {surah.id}. {surah.name}
                     </SelectItem>
                     ))}
@@ -152,7 +152,7 @@ export function AppSidebar() {
                    <ZoomOut />
                  </Button>
                </div>
-                <Label className="text-sm font-medium font-cairo">حجم النص</Label>
+                <Label className="text-sm font-medium">حجم النص</Label>
              </div>
 
              {/* View Mode Toggle */}
@@ -163,7 +163,7 @@ export function AppSidebar() {
                     onCheckedChange={toggleViewMode}
                     aria-label={`التبديل إلى عرض ${viewMode === 'page' ? 'آية بآية' : 'صفحة'}`}
                 />
-               <Label htmlFor="view-mode-toggle" className="text-sm font-medium font-cairo">
+               <Label htmlFor="view-mode-toggle" className="text-sm font-medium">
                  وضع العرض: {viewMode === 'page' ? 'صفحة' : 'آية بآية'}
                </Label>
              </div>
@@ -182,7 +182,7 @@ export function AppSidebar() {
                         onCheckedChange={handleThemeToggle}
                         aria-label={`التبديل إلى الوضع ${theme === 'dark' ? 'الفاتح' : 'الداكن'}`}
                     />
-                    <Label htmlFor="theme-toggle" className="text-sm font-medium font-cairo">
+                    <Label htmlFor="theme-toggle" className="text-sm font-medium">
                         السمة: {theme === 'dark' ? 'داكن' : 'فاتح'}
                     </Label>
                  </div>

@@ -118,30 +118,40 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-cairo; /* Apply Cairo by default */
-    /* Apply Cairo font as the primary UI font */
-    font-family: var(--font-cairo), var(--font-geist-sans); /* Add Geist Sans as fallback */
+    @apply bg-background text-foreground;
+    /* Apply Cairo font as the primary UI font, falling back to system sans-serif */
+    font-family: var(--font-cairo), var(--font-geist-sans), sans-serif;
   }
 
-  /* Explicitly apply Cairo to common UI elements */
-  .font-cairo,
+  /* Explicitly apply Cairo font to common UI elements */
+  /* This ensures UI elements use Cairo unless specifically overridden */
   button,
-  [role="combobox"], /* SelectTrigger */
-  [role="listbox"] *, /* SelectContent items */
-  [role="menu"] *, /* DropdownMenu items */
-  [role="dialog"] *, /* Dialog content */
-  [role="tooltip"], /* Tooltip content */
+  [role="combobox"], /* Shadcn SelectTrigger */
+  [role="listbox"] *, /* Shadcn SelectContent items */
+  [role="menu"] *, /* Shadcn DropdownMenu items */
+  [role="dialog"], /* Shadcn Dialog */
+  [role="alertdialog"], /* Shadcn AlertDialog */
+  [role="tooltip"], /* Shadcn Tooltip */
   label,
-  input, /* Apply to input placeholders too */
+  input,
   textarea,
-  legend /* SidebarGroupLabel */
+  legend, /* Shadcn SidebarGroupLabel */
+  [data-sidebar]:not(.quran-text), /* Sidebar elements, but not Quran text within it */
+  [data-slot]:not(.quran-text), /* General slots, excluding Quran text */
+  .font-cairo /* Allow explicit application */
   {
-     font-family: var(--font-cairo), var(--font-geist-sans);
-   }
+    font-family: var(--font-cairo), var(--font-geist-sans), sans-serif;
+  }
+
+  /* Style dialog content specifically */
+  [role="dialog"] > *,
+  [role="alertdialog"] > * {
+    font-family: var(--font-cairo), var(--font-geist-sans), sans-serif;
+  }
 
   /* Default Quran text font (Hafs) */
   .quran-text {
-    font-family: 'KFGQPC Hafs Uthmanic Script', var(--font-cairo), var(--font-geist-sans);
+    font-family: 'KFGQPC Hafs Uthmanic Script', var(--font-cairo), var(--font-geist-sans), sans-serif;
     /* Add specific styles for Quran text, e.g., line height, word spacing if needed */
     line-height: 2.5; /* Example: Increase line height for readability */
     text-align: center; /* Center align Quran text */
@@ -149,15 +159,15 @@
 
   /* Conditional Quran text fonts based on data-riwaya attribute */
   .quran-text[data-riwaya="hafs"] {
-    font-family: 'KFGQPC Hafs Uthmanic Script', var(--font-cairo), var(--font-geist-sans);
+    font-family: 'KFGQPC Hafs Uthmanic Script', var(--font-cairo), var(--font-geist-sans), sans-serif;
   }
 
   .quran-text[data-riwaya="qalun"] {
-    font-family: 'KFGQPC Qaloun Uthmanic Script', var(--font-cairo), var(--font-geist-sans);
+    font-family: 'KFGQPC Qaloun Uthmanic Script', var(--font-cairo), var(--font-geist-sans), sans-serif;
   }
 
   .quran-text[data-riwaya="warsh"] {
-    font-family: 'KFGQPC Warsh Uthmanic Script', var(--font-cairo), var(--font-geist-sans);
+    font-family: 'KFGQPC Warsh Uthmanic Script', var(--font-cairo), var(--font-geist-sans), sans-serif;
   }
 }
 
