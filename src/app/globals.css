@@ -37,79 +37,80 @@
 
 @layer base {
   :root {
-    --background: 60 56% 91%; /* Beige */
-    --foreground: 240 10% 3.9%; /* Dark Gray */
-    --card: 60 56% 91%; /* Beige */
-    --card-foreground: 240 10% 3.9%; /* Dark Gray */
-    --popover: 60 60% 93%; /* Lighter Beige */
-    --popover-foreground: 240 10% 3.9%; /* Dark Gray */
-    --primary: 168 40% 45%; /* Darker Teal */
+    /* Light Theme based on #f2e9e4, #264653, #2a9d8f, #e9c46a */
+    --background: 28 33% 92%; /* #f2e9e4 */
+    --foreground: 197 37% 24%; /* #264653 */
+    --card: 28 33% 92%; /* Background */
+    --card-foreground: 197 37% 24%; /* Foreground */
+    --popover: 28 33% 95%; /* Lighter Background */
+    --popover-foreground: 197 37% 24%; /* Foreground */
+    --primary: 173 58% 39%; /* #2a9d8f */
     --primary-foreground: 0 0% 100%; /* White */
-    --secondary: 60 50% 85%; /* Darker Beige */
-    --secondary-foreground: 240 10% 3.9%; /* Dark Gray */
-    --muted: 60 60% 95%; /* Lightest Beige */
-    --muted-foreground: 60 10% 45%; /* Muted Gray */
-    --accent: 51 100% 50%; /* Gold */
-    --accent-foreground: 0 0% 0%; /* Black */
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 60 20% 80%; /* Beige/Gray Border */
-    --input: 60 20% 80%; /* Beige/Gray Input */
-    --ring: 51 100% 50%; /* Gold Ring */
+    --secondary: 28 25% 88%; /* Darker Background */
+    --secondary-foreground: 197 37% 24%; /* Foreground */
+    --muted: 28 33% 96%; /* Lightest Background */
+    --muted-foreground: 197 20% 50%; /* Muted Foreground */
+    --accent: 43 74% 66%; /* #e9c46a */
+    --accent-foreground: 197 37% 24%; /* Foreground */
+    --destructive: 0 84.2% 60.2%; /* Default destructive */
+    --destructive-foreground: 0 0% 98%; /* Default destructive foreground */
+    --border: 28 20% 85%; /* Muted Background/Border */
+    --input: 28 20% 85%; /* Muted Background/Input */
+    --ring: 43 74% 66%; /* Accent */
     --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
+    --chart-2: 173 58% 39%; /* Primary */
+    --chart-3: 197 37% 24%; /* Foreground */
+    --chart-4: 43 74% 66%; /* Accent */
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
 
-    /* Sidebar Specific Theme */
-    --sidebar-background: 168 41% 75%; /* Light Teal (#A2D9CE) */
-    --sidebar-foreground: 168 40% 10%; /* Dark Teal/Gray */
-    --sidebar-primary: 168 40% 45%; /* Darker Teal (matches main primary) */
+    /* Sidebar Light Theme (Based on Primary: 173 58% 39%) */
+    --sidebar-background: 173 40% 80%; /* Light Teal */
+    --sidebar-foreground: 173 40% 15%; /* Dark Teal/Gray */
+    --sidebar-primary: 173 58% 39%; /* Main Primary */
     --sidebar-primary-foreground: 0 0% 100%; /* White */
-    --sidebar-accent: 168 30% 85%; /* Very Light Teal/Gray */
-    --sidebar-accent-foreground: 168 40% 10%; /* Dark Teal/Gray */
-    --sidebar-border: 168 30% 65%; /* Medium Teal/Gray */
-    --sidebar-ring: 51 100% 50%; /* Gold Ring */
+    --sidebar-accent: 173 30% 90%; /* Very Light Teal */
+    --sidebar-accent-foreground: 173 40% 15%; /* Dark Teal/Gray */
+    --sidebar-border: 173 30% 70%; /* Medium Teal/Gray */
+    --sidebar-ring: 43 74% 66%; /* Main Accent */
   }
 
   .dark {
-    /* Define dark theme based on the light theme, inverting/adjusting colors */
-    --background: 240 10% 3.9%; /* Dark Gray */
-    --foreground: 60 56% 91%; /* Beige */
-    --card: 240 10% 3.9%; /* Dark Gray */
-    --card-foreground: 60 56% 91%; /* Beige */
-    --popover: 240 10% 8%; /* Darker Gray */
-    --popover-foreground: 60 56% 91%; /* Beige */
-    --primary: 168 40% 55%; /* Brighter Teal */
-    --primary-foreground: 168 40% 5%; /* Very Dark Teal */
-    --secondary: 240 10% 15%; /* Slightly Lighter Dark Gray */
-    --secondary-foreground: 60 56% 91%; /* Beige */
-    --muted: 240 10% 15%; /* Slightly Lighter Dark Gray */
-    --muted-foreground: 60 10% 65%; /* Lighter Muted Gray */
-    --accent: 51 100% 60%; /* Brighter Gold */
-    --accent-foreground: 51 100% 5%; /* Very Dark Brown */
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 10% 20%; /* Dark Gray Border */
-    --input: 240 10% 20%; /* Dark Gray Input */
-    --ring: 51 100% 60%; /* Brighter Gold Ring */
+    /* Dark Theme based on #1a1a1a, #f1faee, #1ccbb9, #f4a261 */
+    --background: 0 0% 10%; /* #1a1a1a */
+    --foreground: 93 67% 94%; /* #f1faee */
+    --card: 0 0% 10%; /* Background */
+    --card-foreground: 93 67% 94%; /* Foreground */
+    --popover: 0 0% 15%; /* Lighter Background */
+    --popover-foreground: 93 67% 94%; /* Foreground */
+    --primary: 174 75% 49%; /* #1ccbb9 */
+    --primary-foreground: 174 75% 10%; /* Dark Teal */
+    --secondary: 0 0% 20%; /* Slightly Lighter Background */
+    --secondary-foreground: 93 67% 94%; /* Foreground */
+    --muted: 0 0% 20%; /* Slightly Lighter Background */
+    --muted-foreground: 93 20% 70%; /* Muted Foreground */
+    --accent: 27 87% 67%; /* #f4a261 */
+    --accent-foreground: 0 0% 10%; /* Background */
+    --destructive: 0 62.8% 30.6%; /* Default dark destructive */
+    --destructive-foreground: 0 0% 98%; /* Default dark destructive foreground */
+    --border: 0 0% 25%; /* Muted Background/Border */
+    --input: 0 0% 25%; /* Muted Background/Input */
+    --ring: 27 87% 67%; /* Accent */
     --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
+    --chart-2: 174 75% 49%; /* Primary */
     --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
+    --chart-4: 27 87% 67%; /* Accent */
     --chart-5: 340 75% 55%;
 
-    /* Dark Sidebar Specific Theme */
-    --sidebar-background: 168 30% 15%; /* Dark Teal/Gray */
-    --sidebar-foreground: 168 40% 85%; /* Light Teal */
-    --sidebar-primary: 168 40% 55%; /* Brighter Teal */
-    --sidebar-primary-foreground: 168 40% 5%; /* Very Dark Teal */
-    --sidebar-accent: 168 25% 25%; /* Medium Dark Teal/Gray */
-    --sidebar-accent-foreground: 168 40% 85%; /* Light Teal */
-    --sidebar-border: 168 20% 30%; /* Darker Teal/Gray */
-    --sidebar-ring: 51 100% 60%; /* Brighter Gold Ring */
+    /* Sidebar Dark Theme (Based on Primary: 174 75% 49%) */
+    --sidebar-background: 174 60% 20%; /* Dark Teal/Gray */
+    --sidebar-foreground: 174 60% 85%; /* Lighter Teal */
+    --sidebar-primary: 174 75% 49%; /* Main Dark Primary */
+    --sidebar-primary-foreground: 174 75% 10%; /* Very Dark Teal */
+    --sidebar-accent: 174 50% 30%; /* Medium Dark Teal */
+    --sidebar-accent-foreground: 174 60% 85%; /* Lighter Teal */
+    --sidebar-border: 174 40% 35%; /* Darker Teal/Gray */
+    --sidebar-ring: 27 87% 67%; /* Main Dark Accent */
   }
 }
 
@@ -120,34 +121,30 @@
   body {
     @apply bg-background text-foreground;
     /* Apply Cairo font as the primary UI font, falling back to system sans-serif */
-    font-family: var(--font-cairo), var(--font-geist-sans), sans-serif;
+    font-family: var(--font-cairo), var(--font-geist-sans); /* Add Geist Sans as fallback */
   }
 
   /* Explicitly apply Cairo font to common UI elements */
-  /* This ensures UI elements use Cairo unless specifically overridden */
   .font-cairo,
   button,
-  [role="combobox"], /* Shadcn SelectTrigger */
-  [role="listbox"] *, /* Shadcn SelectContent items */
-  [role="menu"] *, /* Shadcn DropdownMenu items */
-  [role="dialog"], /* Shadcn Dialog */
-  [role="alertdialog"], /* Shadcn AlertDialog */
-  [role="tooltip"], /* Shadcn Tooltip */
+  [role="combobox"], /* SelectTrigger */
+  [role="listbox"] *, /* SelectContent items */
+  [role="menu"] *, /* DropdownMenu items */
+  [role="dialog"] *, /* Dialog content */
+  [role="tooltip"], /* Tooltip content */
   label,
-  input,
+  input, /* Apply to input placeholders too */
   textarea,
-  legend, /* Shadcn SidebarGroupLabel */
-  [data-sidebar]:not(.quran-text), /* Sidebar elements, but not Quran text within it */
-  [data-slot]:not(.quran-text), /* General slots, excluding Quran text */
-  .font-cairo /* Allow explicit application */
+  legend /* SidebarGroupLabel */
   {
-    font-family: var(--font-cairo), var(--font-geist-sans), sans-serif;
-  }
+     font-family: var(--font-cairo), var(--font-geist-sans);
+   }
+
 
   /* Style dialog content specifically */
   [role="dialog"] > *,
   [role="alertdialog"] > * {
-    font-family: var(--font-cairo), var(--font-geist-sans), sans-serif;
+    font-family: var(--font-cairo), var(--font-geist-sans);
   }
 
   /* Default Quran text font (Hafs) */
@@ -179,4 +176,5 @@
 @layer utilities {
  /* Add custom utility classes if needed */
 }
+
 
